@@ -1,0 +1,6 @@
+@DevJobsBackend_HostAddress = http://localhost:5282
+
+GET {{DevJobsBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
