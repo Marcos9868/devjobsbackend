@@ -1,5 +1,6 @@
 ﻿using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
+using DevJobsBackend.Entities;
 
 namespace DevJobsBackend.Services
 {
@@ -11,11 +12,17 @@ namespace DevJobsBackend.Services
         {
             _context = context;
         }
-
-        public Task<string> GenerateHashPassword(string password)
+        public async Task<string> GenerateHashPassword(string password)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            return Task.FromResult(hashedPassword);
+            return await Task.FromResult(hashedPassword);
+        }
+        public dynamic RegistrateUser(User user)
+        {
+            _context.Users.Add(user);
+            return _context.SaveChanges() > 0 
+                ? user 
+                : "Unable to registrate user";
         }
     }
 }
