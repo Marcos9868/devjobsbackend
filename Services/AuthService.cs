@@ -1,10 +1,8 @@
 ﻿using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
-using System.Threading.Tasks;
 
 namespace DevJobsBackend.Services
 {
-using BCrypt.Net;
     public class AuthService : IAuthService
     {
         private readonly DataContext _context;
@@ -16,7 +14,7 @@ using BCrypt.Net;
 
         public Task<string> GenerateHashPassword(string password)
         {
-            string hashedPassword = BCrypt.HashPassword(password);
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
             return Task.FromResult(hashedPassword);
         }
     }
