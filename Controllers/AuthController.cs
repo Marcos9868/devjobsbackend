@@ -17,9 +17,11 @@ namespace DevJobsBackend.Controllers
             _mapper = mapper;
         }
 
-       
+        [HttpGet("testehash")]
+        public Task<string> TesteHash(){
+            var testeHashed = _authService.GenerateHashPassword("teste");
 
-
-
+            return testeHashed;
+        }
     }
 }
