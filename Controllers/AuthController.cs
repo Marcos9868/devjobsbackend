@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using DevJobsBackend.Entities;
+using DevJobsBackend.Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevJobsBackend.Controllers
@@ -17,7 +17,8 @@ namespace DevJobsBackend.Controllers
             _mapper = mapper;
         }
 
-        
+       
+
 
 
     }
