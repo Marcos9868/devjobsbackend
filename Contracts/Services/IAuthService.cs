@@ -1,7 +1,9 @@
-﻿namespace DevJobsBackend.Contracts.Services;
+﻿using DevJobsBackend.Entities;
+
+namespace DevJobsBackend.Contracts.Services;
 
 public interface IAuthService
 {
-    Task<String> GenerateHashPassword(string password);
-
+    Task<string> GenerateHashPassword(string password);
+    dynamic RegistrateUser(User user);
 }
