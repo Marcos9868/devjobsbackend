@@ -2,6 +2,7 @@ using AutoMapper;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.IoC.ProfileMapping;
 using DevJobsBackend.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevJobsBackend.IoC.Services
 {
