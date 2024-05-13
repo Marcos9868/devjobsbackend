@@ -16,10 +16,5 @@ namespace DevJobsBackend.Controllers
             _authService = authService;
             _mapper = mapper;
         }
-
-       
-
-
-
     }
 }
