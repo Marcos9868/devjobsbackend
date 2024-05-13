@@ -23,5 +23,6 @@ namespace DevJobsBackend.Controllers
 
             return testeHashed;
         }
+
     }
 }

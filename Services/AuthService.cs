@@ -1,11 +1,10 @@
-﻿
+﻿using DevJobsBackend.Contracts.Services;
+using DevJobsBackend.Data;
+using System.Threading.Tasks;
 
 namespace DevJobsBackend.Services
 {
-    using BCrypt.Net;
-    using DevJobsBackend.Contracts.Services;
-    using DevJobsBackend.Data;
-
+using BCrypt.Net;
     public class AuthService : IAuthService
     {
         private readonly DataContext _context;
