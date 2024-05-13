@@ -10,6 +10,7 @@ namespace DevJobsBackend.IoC.Services
     {
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
 
             // AutoMapper
