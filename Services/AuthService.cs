@@ -15,9 +15,17 @@ namespace DevJobsBackend.Services
             _context = context;
         }
 
-        public Task<bool> CompareHashPassword(string passwordToCompare)
+        public Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword)
         {
-            throw new NotImplementedException();
+            byte[] inputBytes = Encoding.UTF8.GetBytes(UserPassword);
+            
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                string hashedUserPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                
+                return Task.FromResult(hashedUserPassword == DatabasePassword);
+            }
         }
 
         public Task<string> GenerateHashPassword(string password)
