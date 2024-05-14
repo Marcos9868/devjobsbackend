@@ -1,8 +1,12 @@
 ﻿using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
+
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+
+using DevJobsBackend.Entities;
+
 
 namespace DevJobsBackend.Services
 {
@@ -14,7 +18,7 @@ namespace DevJobsBackend.Services
         {
             _context = context;
         }
-
+        
         public Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword)
         {
             byte[] inputBytes = Encoding.UTF8.GetBytes(UserPassword);
@@ -43,6 +47,19 @@ namespace DevJobsBackend.Services
         public Task<ResponseModel<string>> Login(string password)
         {
             throw new NotImplementedException();
+
+        public async Task<string> GenerateHashPassword(string password)
+        {
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            return await Task.FromResult(hashedPassword);
+        }
+        public dynamic RegistrateUser(User user)
+        {
+            _context.Users.Add(user);
+            return _context.SaveChanges() > 0 
+                ? user 
+                : "Unable to registrate user";
+
         }
     }
 }
