@@ -2,6 +2,7 @@
 
 public interface IAuthService
 {
-    Task<String> GenerateHashPassword(string password);
-
+    Task<string> GenerateHashPassword(string password);
+    Task<bool> CompareHashPassword(string passwordToCompare);
+    Task<ResponseModel<string>> Login(string password);
 }
