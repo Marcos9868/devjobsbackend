@@ -55,9 +55,5 @@ namespace DevJobsBackend.Services
                 : (dynamic)"Unable to register user";
         }
 
-        dynamic IAuthService.RegistrateUser(User user)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
