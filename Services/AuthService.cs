@@ -15,6 +15,7 @@ namespace DevJobsBackend.Services
         public AuthService(DataContext context)
         {
             _context = context;
+            
         }
 
         public Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword)
@@ -42,7 +43,17 @@ namespace DevJobsBackend.Services
             }
         }
 
-        public Task<ResponseModel<string>> Login(string password)
+        public Task<string> GenerateJwtRefreshToken(string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GenerateJwtToken(string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ResponseModel<TokenResponseModel>> Login(string password)
         {
             throw new NotImplementedException();
         }

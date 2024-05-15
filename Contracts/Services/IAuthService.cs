@@ -6,7 +6,10 @@ public interface IAuthService
 {
     Task<string> GenerateHashPassword(string password);
     Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword);
-    Task<ResponseModel<string>> Login(string password);
+
+    Task<string> GenerateJwtToken(string password);
+    Task<string> GenerateJwtRefreshToken (string password);
+    Task<ResponseModel<TokenResponseModel>> Login(string password);
     Task<dynamic> RegistrateUser(User user);
 
 
