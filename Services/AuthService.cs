@@ -55,6 +55,9 @@ namespace DevJobsBackend.Services
 
         public async Task<ResponseModel<TokenResponseModel>> Login(string password)
         {
+            ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
+
+            
             throw new NotImplementedException();
         }
 
