@@ -17,12 +17,7 @@ namespace DevJobsBackend.Controllers
             _authService = authService;
             _mapper = mapper;
         }
-        [HttpGet("testehash")]
-        public Task<string> TesteHash(){
-            var testeHashed = _authService.GenerateHashPassword("teste");
-
-            return testeHashed;
-        }
+        
         [HttpPost("Registry")]
         public IActionResult Registry(UserDTO user)
         {
