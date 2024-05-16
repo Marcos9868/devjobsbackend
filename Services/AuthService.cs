@@ -18,24 +18,22 @@ namespace DevJobsBackend.Services
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
 
-
         public AuthService(DataContext context, IConfiguration configuration)
         {
-            _configuration = configuration;
             _context = context;
-
+            _configuration = configuration;
         }
 
-        public bool CompareHashPassword(string UserPassword, string DatabasePassword)
+        private bool CompareHashPassword(string userPassword, string databasePassword)
         {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(UserPassword);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(userPassword);
 
             using (SHA256 sha256 = SHA256.Create())
             {
                 byte[] hashBytes = sha256.ComputeHash(inputBytes);
                 string hashedUserPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
 
-                return hashedUserPassword == DatabasePassword;
+                return hashedUserPassword == databasePassword;
             }
         }
 
@@ -51,62 +49,61 @@ namespace DevJobsBackend.Services
             }
         }
 
-        public  string RefreshJwtToken(string refreshToken)
-{
-    // Validar e ler o token de atualização
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var validationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"])),
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidIssuer = _configuration["AppSettings:Issuer"],
-        ValidAudience = _configuration["AppSettings:Audience"],
-        ClockSkew = TimeSpan.Zero
-    };
+        public string GenerateAccessToken(string refreshToken)
+        {
+            var email = ValidateRefreshToken(refreshToken);
+            return GenerateJwtToken(email);
+        }
 
-    SecurityToken validatedToken;
-    ClaimsPrincipal principal;
-    try
-    {
-        principal = tokenHandler.ValidateToken(refreshToken, validationParameters, out validatedToken);
-    }
-    catch (Exception ex)
-    {
-        // Token de atualização inválido
-        throw new SecurityTokenException("Invalid refresh token", ex);
-    }
+        private string ValidateRefreshToken(string refreshToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"])),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _configuration["AppSettings:Issuer"],
+                ValidAudience = _configuration["AppSettings:Audience"],
+                ClockSkew = TimeSpan.Zero
+            };
 
-    // Extraia informações do token de atualização
-    var emailClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-    if (string.IsNullOrEmpty(emailClaim))
-    {
-        throw new SecurityTokenException("Invalid refresh token: missing email claim");
-    }
+            SecurityToken validatedToken;
+            ClaimsPrincipal principal;
+            try
+            {
+                principal = tokenHandler.ValidateToken(refreshToken, validationParameters, out validatedToken);
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityTokenException("Invalid refresh token", ex);
+            }
 
-    // Verifique se o token de atualização ainda é válido
-    if (validatedToken.ValidTo < DateTime.UtcNow)
-    {
-        throw new SecurityTokenException("Refresh token has expired");
-    }
+            var emailClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(emailClaim))
+            {
+                throw new SecurityTokenException("Invalid refresh token: missing email claim");
+            }
 
-    // Gere um novo token JWT com base nas informações do usuário
-    var jwtToken = GenerateJwtToken(emailClaim);
+            if (validatedToken.ValidTo < DateTime.UtcNow)
+            {
+                throw new SecurityTokenException("Refresh token has expired");
+            }
 
-    return jwtToken;
-}
-
+            return emailClaim;
+        }
 
         public string GenerateJwtToken(string email)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[] {
-        new Claim(JwtRegisteredClaimNames.Sub, email),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    };
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["AppSettings:Issuer"],
@@ -119,43 +116,60 @@ namespace DevJobsBackend.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public string GenerateRefreshToken(string email)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+        new Claim(JwtRegisteredClaimNames.Sub, email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        // Adicionar uma reivindicação de email ao token
+        new Claim(JwtRegisteredClaimNames.Email, email)
+    };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["AppSettings:Issuer"],
+                audience: _configuration["AppSettings:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(7), // Define a expiração do refreshToken (por exemplo, 7 dias)
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
 
         public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
         {
             ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
 
-            var UserFromDatabase = await _context.Users.FirstOrDefaultAsync(UserData => UserData.Email == loginDTO.Email);
+            // var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
 
-            if (UserFromDatabase == null)
+            // if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
+            // {
+            //     response.Message = "Email or Password incorrect";
+            //     return response;
+            // }
+
+            var refreshToken = GenerateRefreshToken(loginDTO.Email);
+            var accessToken = GenerateAccessToken(refreshToken);
+
+            response.Data = new TokenResponseModel
             {
-                response.Message = "Email or Password incorrect";
-                return response;
-            }
-
-            bool IsCorrectPassword = this.CompareHashPassword(loginDTO.Password, UserFromDatabase.HashPassword);
-
-            if (!IsCorrectPassword)
-            {
-                response.Message = "Email or Password incorrect";
-                return response;
-            }
-
-            var JwtToken = GenerateJwtToken(loginDTO.Email);
+                RefreshToken = refreshToken,
+                AccessToken = accessToken
+            };
 
 
-
-
-
-            throw new NotImplementedException();
+            return response;
         }
 
         public async Task<dynamic> RegistrateUser(User user)
         {
             _context.Users.Add(user);
-            return await _context.SaveChangesAsync() > 0
-                ? user
-                : (dynamic)"Unable to register user";
+            return await _context.SaveChangesAsync() > 0 ? user : (dynamic)"Unable to register user";
         }
-
     }
 }

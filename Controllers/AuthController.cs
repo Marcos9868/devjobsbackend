@@ -30,5 +30,11 @@ namespace DevJobsBackend.Controllers
             }
             return Ok(_mapper.Map<UserDTO>(newUser));
         }
+        [HttpPost("login")]
+         public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
+        {
+            var responseTokens = await _authService.Login(loginDTO);
+            return responseTokens;
+        }
     }
 }

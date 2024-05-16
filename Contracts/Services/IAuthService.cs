@@ -6,10 +6,9 @@ namespace DevJobsBackend.Contracts.Services;
 public interface IAuthService
 {
     Task<string> GenerateHashPassword(string password);
-    bool CompareHashPassword(string UserPassword, string DatabasePassword);
 
     string GenerateJwtToken(string email);
-    string RefreshJwtToken (string token);
+    string GenerateRefreshToken (string token);
     Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
     Task<dynamic> RegistrateUser(User user);
 
