@@ -17,12 +17,12 @@ namespace DevJobsBackend.Controllers
             _authService = authService;
             _mapper = mapper;
         }
-        [HttpGet("testehash")]
-        public Task<string> TesteHash(){
-            var testeHashed = _authService.GenerateHashPassword("teste");
+        // [HttpGet("testehash")]
+        // public Task<string> TesteHash(){
+        //     var testeHashed = _authService.GenerateHashPassword("teste");
 
-            return testeHashed;
-        }
+        //     return testeHashed;
+        // }
         [HttpPost("Registry")]
         public IActionResult Registry(UserDTO user)
         {
@@ -34,6 +34,14 @@ namespace DevJobsBackend.Controllers
                 return BadRequest();
             }
             return Ok(_mapper.Map<UserDTO>(newUser));
+        }
+        [HttpPut("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDTO reset)
+        {
+            if(!ModelState.IsValid) return BadRequest();
+            var resetPassword = await _authService.ResetPassword(reset.Email, reset.NewPassword);
+            if (resetPassword == null) return BadRequest();
+            return Ok(resetPassword);
         }
     }
 }
