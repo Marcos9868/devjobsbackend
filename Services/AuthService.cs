@@ -1,9 +1,12 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using BCrypt.Net;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
 using DevJobsBackend.Entities;
+using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DevJobsBackend.Services
 {
@@ -16,27 +19,43 @@ namespace DevJobsBackend.Services
             _context = context;
             _userService = userService;
         }
-        public string GenerateHashPassword(string password)
-        {
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
 
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
+        public Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword)
+        {
+            byte[] inputBytes = Encoding.UTF8.GetBytes(UserPassword);
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                string hashedUserPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
+                return Task.FromResult(hashedUserPassword == DatabasePassword);
             }
-            // string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            // return await Task.FromResult(hashedPassword);
         }
-        public dynamic RegistrateUser(User user)
+
+        public Task<string> GenerateHashPassword(string password)
+        {
+            byte[] inputBytes = Encoding.UTF8.GetBytes(password);
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                string hashedPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                return Task.FromResult(hashedPassword);
+            }
+        }
+
+        public Task<ResponseModel<string>> Login(string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<dynamic> RegistrateUser(User user)
         {
             var hashPassword = GenerateHashPassword(user.HashPassword);
             user.HashPassword = hashPassword;
             _context.Users.Add(user);
+
             return _context.SaveChanges() > 0
                 ? user
                 : "Unable to registrate user";
@@ -44,10 +63,17 @@ namespace DevJobsBackend.Services
         public async Task<string> ResetPassword(string Email, string NewPassword)
         {
             var user = await _userService.GetUserByEmail(Email) ?? throw new Exception("Unable to find user");
-            var newHashedPassword = BCrypt.Net.BCrypt.HashPassword(NewPassword) ?? throw new Exception("Unable to hash password");
+            var newHashedPassword = HashPassword(NewPassword) ?? throw new Exception("Unable to hash password");
             user.HashPassword = newHashedPassword;
             _context.SaveChanges();
             return "Password changed with success";
         }
+
+            return await _context.SaveChangesAsync() > 0
+                ? user
+                : (dynamic)"Unable to register user";
+        }
+
+
     }
 }
