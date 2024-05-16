@@ -1,15 +1,16 @@
-﻿using DevJobsBackend.Entities;
+﻿using DevJobsBackend.Dtos;
+using DevJobsBackend.Entities;
 
 namespace DevJobsBackend.Contracts.Services;
 
 public interface IAuthService
 {
     Task<string> GenerateHashPassword(string password);
-    Task<bool> CompareHashPassword(string UserPassword, string DatabasePassword);
+    bool CompareHashPassword(string UserPassword, string DatabasePassword);
 
-    Task<string> GenerateJwtToken(string password);
-    Task<string> GenerateJwtRefreshToken (string password);
-    Task<ResponseModel<TokenResponseModel>> Login(string password);
+    string GenerateJwtToken(string email);
+    string RefreshJwtToken (string token);
+    Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
     Task<dynamic> RegistrateUser(User user);
 
 
