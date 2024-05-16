@@ -80,7 +80,7 @@ namespace DevJobsBackend.Services
                 throw new SecurityTokenException("Invalid refresh token", ex);
             }
 
-            var emailClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(emailClaim))
             {
                 throw new SecurityTokenException("Invalid refresh token: missing email claim");
