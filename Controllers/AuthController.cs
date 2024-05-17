@@ -36,5 +36,13 @@ namespace DevJobsBackend.Controllers
             var responseTokens = await _authService.Login(loginDTO);
             return responseTokens;
         }
+        [HttpPost("RefreshAccessToken")]
+         public  ResponseModel<TokenResponseModel> RefreshAccessToken(string RefreshToken)
+        {
+            var responseTokens =  _authService.GenerateAccessTokenWithResponse(RefreshToken);
+
+
+            return responseTokens;
+        }
     }
 }

@@ -49,10 +49,17 @@ namespace DevJobsBackend.Services
             }
         }
 
-        public string GenerateAccessToken(string refreshToken)
+        private TokenResponseModel GenerateAccessToken(string refreshToken)
         {
             var email = ValidateRefreshToken(refreshToken);
-            return GenerateJwtToken(email);
+            var accessToken = GenerateJwtToken(email);
+            var RenovatedRefreshToken = GenerateRefreshToken(email);
+            TokenResponseModel Tokens = new TokenResponseModel
+            {
+                AccessToken = accessToken,
+                RefreshToken = RenovatedRefreshToken
+            };
+            return Tokens;
         }
 
         private string ValidateRefreshToken(string refreshToken)
@@ -154,13 +161,9 @@ namespace DevJobsBackend.Services
             // }
 
             var refreshToken = GenerateRefreshToken(loginDTO.Email);
-            var accessToken = GenerateAccessToken(refreshToken);
+            TokenResponseModel Tokens = GenerateAccessToken(refreshToken);
 
-            response.Data = new TokenResponseModel
-            {
-                RefreshToken = refreshToken,
-                AccessToken = accessToken
-            };
+            response.Data = Tokens;
 
 
             return response;
@@ -171,5 +174,31 @@ namespace DevJobsBackend.Services
             _context.Users.Add(user);
             return await _context.SaveChangesAsync() > 0 ? user : (dynamic)"Unable to register user";
         }
+
+        public ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken)
+        {
+            ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
+
+            try
+            {
+                TokenResponseModel tokens = GenerateAccessToken(refreshToken);
+                response.Data = tokens;
+                response.Status = true;
+                response.Message = "Access token generated successfully.";
+            }
+            catch (SecurityTokenException ex)
+            {
+                response.Status = false;
+                response.Message = $"Token validation error: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+            }
+
+            return response;
+        }
+
     }
 }

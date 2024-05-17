@@ -10,6 +10,8 @@ public interface IAuthService
     string GenerateJwtToken(string email);
     string GenerateRefreshToken (string token);
     Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
+    
+    ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken);
     Task<dynamic> RegistrateUser(User user);
 
 
