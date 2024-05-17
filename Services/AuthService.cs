@@ -1,4 +1,4 @@
-using DevJobsBackend.Contracts.Services;
+﻿using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
@@ -17,11 +17,14 @@ namespace DevJobsBackend.Services
     {
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public AuthService(DataContext context, IConfiguration configuration)
+        public AuthService(DataContext context, IConfiguration configuration,IUserService userService)
         {
             _context = context;
             _configuration = configuration;
+            _userService = userService;
+
         }
 
         private bool VerifyPasswordHash(string enteredPassword, string storedPasswordHash)
@@ -37,7 +40,7 @@ namespace DevJobsBackend.Services
             }
         }
 
-        private Task<string> HashPasswordAsync(string password)
+        private Task<string> GenerateHashPassowrd(string password)
         {
             byte[] inputBytes = Encoding.UTF8.GetBytes(password);
 
@@ -222,6 +225,14 @@ namespace DevJobsBackend.Services
             }
 
             return response;
+        }
+        public async Task<string> ResetPassword(string Email, string NewPassword)
+        {
+            var user = await _userService.GetUserByEmail(Email) ?? throw new Exception("Unable to find user");
+            var newHashedPassword = await GenerateHashPassowrd(NewPassword) ?? throw new Exception("Unable to hash password");
+            user.HashPassword = newHashedPassword;
+            _context.SaveChanges();
+            return "Password changed with success";
         }
     }
 }
