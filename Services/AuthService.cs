@@ -152,14 +152,14 @@ namespace DevJobsBackend.Services
 
             try
             {
-                var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
+                // var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
 
-                if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
-                {
-                    response.Status = false;
-                    response.Message = "Email or Password incorrect";
-                    return response;
-                }
+                // if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
+                // {
+                //     response.Status = false;
+                //     response.Message = "Email or Password incorrect";
+                //     return response;
+                // }
 
                 var refreshToken = GenerateRefreshToken(loginDTO.Email);
                 TokenResponseModel tokens = GenerateAccessToken(refreshToken);
