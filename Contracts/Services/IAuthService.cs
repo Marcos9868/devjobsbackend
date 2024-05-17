@@ -1,4 +1,4 @@
-﻿using DevJobsBackend.Dtos;
+using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
 
 namespace DevJobsBackend.Contracts.Services;

@@ -6,6 +6,7 @@ namespace DevJobsBackend.Contracts.Services
     {
         Task<List<User>> GetUsers();
         Task<User> GetUser(int idUser);
+        Task<User> GetUserByEmail(string userEmail);
         Task<User> AddUser(User user);
         Task<string> UpdateUser(User user);
         Task<string> RemoveUser(User user);

@@ -41,6 +41,12 @@ namespace DevJobsBackend.Services
             throw new Exception("Unable to find user");
             return user;
         }
+        public async Task<User> GetUserByEmail(string userEmail)
+        {
+            var user = await _context.Users.FindAsync(userEmail) ?? 
+            throw new Exception("Unable to find user");
+            return user;
+        }
         public async Task<string> UpdateUser(User user)
         {
             _context.Users.Update(user);
