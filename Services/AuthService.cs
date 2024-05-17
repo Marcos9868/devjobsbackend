@@ -53,13 +53,13 @@ namespace DevJobsBackend.Services
         {
             var email = ValidateRefreshToken(refreshToken);
             var accessToken = GenerateJwtToken(email);
-            var RenovatedRefreshToken = GenerateRefreshToken(email);
-            TokenResponseModel Tokens = new TokenResponseModel
+            var renovatedRefreshToken = GenerateRefreshToken(email);
+            TokenResponseModel tokens = new TokenResponseModel
             {
                 AccessToken = accessToken,
-                RefreshToken = RenovatedRefreshToken
+                RefreshToken = renovatedRefreshToken
             };
-            return Tokens;
+            return tokens;
         }
 
         private string ValidateRefreshToken(string refreshToken)
@@ -130,49 +130,73 @@ namespace DevJobsBackend.Services
 
             var claims = new[]
             {
-        new Claim(JwtRegisteredClaimNames.Sub, email),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        // Adicionar uma reivindicação de email ao token
-        new Claim(JwtRegisteredClaimNames.Email, email)
-    };
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, email)
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["AppSettings:Issuer"],
                 audience: _configuration["AppSettings:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(7), // Define a expiração do refreshToken (por exemplo, 7 dias)
+                expires: DateTime.Now.AddDays(7),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
         public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
         {
             ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
 
-            // var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
+            try
+            {
+                var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
 
-            // if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
-            // {
-            //     response.Message = "Email or Password incorrect";
-            //     return response;
-            // }
+                if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
+                {
+                    response.Status = false;
+                    response.Message = "Email or Password incorrect";
+                    return response;
+                }
 
-            var refreshToken = GenerateRefreshToken(loginDTO.Email);
-            TokenResponseModel Tokens = GenerateAccessToken(refreshToken);
+                var refreshToken = GenerateRefreshToken(loginDTO.Email);
+                TokenResponseModel tokens = GenerateAccessToken(refreshToken);
 
-            response.Data = Tokens;
-
+                response.Data = tokens;
+                response.Status = true;
+                response.Message = "Login successful";
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+            }
 
             return response;
         }
 
-        public async Task<dynamic> RegistrateUser(User user)
+        public async Task<ResponseModel<User>> RegistrateUser(User user)
         {
-            _context.Users.Add(user);
-            return await _context.SaveChangesAsync() > 0 ? user : (dynamic)"Unable to register user";
+            ResponseModel<User> response = new ResponseModel<User>();
+
+            try
+            {
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                response.Data = user;
+                response.Status = true;
+                response.Message = "User registered successfully.";
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+            }
+
+            return response;
         }
 
         public ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken)
@@ -199,6 +223,5 @@ namespace DevJobsBackend.Services
 
             return response;
         }
-
     }
 }

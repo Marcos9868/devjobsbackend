@@ -12,7 +12,7 @@ public interface IAuthService
     Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
     
     ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken);
-    Task<dynamic> RegistrateUser(User user);
+    Task<ResponseModel<User>> RegistrateUser(User user);
 
 
 }
