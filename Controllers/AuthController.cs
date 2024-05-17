@@ -39,7 +39,7 @@ namespace DevJobsBackend.Controllers
         [HttpPost("RefreshAccessToken")]
          public  ResponseModel<TokenResponseModel> RefreshAccessToken([FromHeader(Name = "RefreshToken")] string refreshToken)
         {
-            var responseTokens =  _authService.GenerateAccessTokenWithResponse(refreshToken);
+            var responseTokens =  _authService.GenerateAccessTokenResponse(refreshToken);
 
 
             return responseTokens;

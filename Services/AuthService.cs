@@ -24,20 +24,20 @@ namespace DevJobsBackend.Services
             _configuration = configuration;
         }
 
-        private bool CompareHashPassword(string userPassword, string databasePassword)
+        private bool VerifyPasswordHash(string enteredPassword, string storedPasswordHash)
         {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(userPassword);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(enteredPassword);
 
             using (SHA256 sha256 = SHA256.Create())
             {
                 byte[] hashBytes = sha256.ComputeHash(inputBytes);
-                string hashedUserPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                string hashedPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
 
-                return hashedUserPassword == databasePassword;
+                return hashedPassword == storedPasswordHash;
             }
         }
 
-        public Task<string> GenerateHashPassword(string password)
+        private Task<string> HashPasswordAsync(string password)
         {
             byte[] inputBytes = Encoding.UTF8.GetBytes(password);
 
@@ -49,15 +49,15 @@ namespace DevJobsBackend.Services
             }
         }
 
-        private TokenResponseModel GenerateAccessToken(string refreshToken)
+        private TokenResponseModel GenerateNewTokens(string refreshToken)
         {
             var email = ValidateRefreshToken(refreshToken);
-            var accessToken = GenerateJwtToken(email);
-            var renovatedRefreshToken = GenerateRefreshToken(email);
+            var accessToken = CreateAccessToken(email);
+            var newRefreshToken = CreateRefreshToken(email);
             TokenResponseModel tokens = new TokenResponseModel
             {
                 AccessToken = accessToken,
-                RefreshToken = renovatedRefreshToken
+                RefreshToken = newRefreshToken
             };
             return tokens;
         }
@@ -101,7 +101,7 @@ namespace DevJobsBackend.Services
             return emailClaim;
         }
 
-        public string GenerateJwtToken(string email)
+        private string CreateAccessToken(string email)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -123,7 +123,7 @@ namespace DevJobsBackend.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string GenerateRefreshToken(string email)
+        private string CreateRefreshToken(string email)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -154,15 +154,15 @@ namespace DevJobsBackend.Services
             {
                 // var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
 
-                // if (userFromDatabase == null || !CompareHashPassword(loginDTO.Password, userFromDatabase.HashPassword))
+                // if (userFromDatabase == null || !VerifyPasswordHash(loginDTO.Password, userFromDatabase.HashPassword))
                 // {
                 //     response.Status = false;
                 //     response.Message = "Email or Password incorrect";
                 //     return response;
                 // }
 
-                var refreshToken = GenerateRefreshToken(loginDTO.Email);
-                TokenResponseModel tokens = GenerateAccessToken(refreshToken);
+                var refreshToken = CreateRefreshToken(loginDTO.Email);
+                TokenResponseModel tokens = GenerateNewTokens(refreshToken);
 
                 response.Data = tokens;
                 response.Status = true;
@@ -199,13 +199,13 @@ namespace DevJobsBackend.Services
             return response;
         }
 
-        public ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken)
+        public ResponseModel<TokenResponseModel> GenerateAccessTokenResponse(string refreshToken)
         {
             ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
 
             try
             {
-                TokenResponseModel tokens = GenerateAccessToken(refreshToken);
+                TokenResponseModel tokens = GenerateNewTokens(refreshToken);
                 response.Data = tokens;
                 response.Status = true;
                 response.Message = "Access token generated successfully.";

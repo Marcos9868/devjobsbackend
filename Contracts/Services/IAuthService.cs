@@ -4,14 +4,9 @@ using DevJobsBackend.Entities;
 namespace DevJobsBackend.Contracts.Services;
 
 public interface IAuthService
-{
-    Task<string> GenerateHashPassword(string password);
-
-    string GenerateJwtToken(string email);
-    string GenerateRefreshToken (string token);
-    Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
+{    Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
     
-    ResponseModel<TokenResponseModel> GenerateAccessTokenWithResponse(string refreshToken);
+    ResponseModel<TokenResponseModel> GenerateAccessTokenResponse(string refreshToken);
     Task<ResponseModel<User>> RegistrateUser(User user);
 
 
