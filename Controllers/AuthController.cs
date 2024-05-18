@@ -12,11 +12,13 @@ namespace DevJobsBackend.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
+
         public AuthController(IAuthService authService, IMapper mapper)
         {
             _authService = authService;
             _mapper = mapper;
         }
+
         [HttpPost("Registry")]
         public IActionResult Registry(UserDTO user)
         {
@@ -29,10 +31,25 @@ namespace DevJobsBackend.Controllers
             }
             return Ok(_mapper.Map<UserDTO>(newUser));
         }
+
+        [HttpPost("login")]
+        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
+        {
+            var responseTokens = await _authService.Login(loginDTO);
+            return responseTokens;
+        }
+
+        [HttpPost("RefreshAccessToken")]
+        public ResponseModel<TokenResponseModel> RefreshAccessToken([FromHeader(Name = "RefreshToken")] string refreshToken)
+        {
+            var responseTokens = _authService.GenerateAccessTokenResponse(refreshToken);
+            return responseTokens;
+        }
+
         [HttpPut("ResetPassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO reset)
         {
-            if(!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest();
             var resetPassword = await _authService.ResetPassword(reset.Email, reset.NewPassword);
             if (resetPassword == null) return BadRequest();
             return Ok(resetPassword);
