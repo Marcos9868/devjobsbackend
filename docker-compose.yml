@@ -1,0 +1,25 @@
+version: '4'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP=5000
+      - ASPNETCORE_HTTPS=5001
+  db:
+    image: postgres:latest
+    container_name: consoledotjob.db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: devjobsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./.containers/devjobsdb:/var/lib/postgresql/data
