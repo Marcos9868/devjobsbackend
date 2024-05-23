@@ -5,7 +5,7 @@
 # dotenv files
 .env
 
-
+.containers
 
 # User-specific files
 *.rsuser
