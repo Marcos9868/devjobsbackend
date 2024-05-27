@@ -20,11 +20,11 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpPost("Registry")]
-        public IActionResult Registry(UserDTO user)
+        public async Task<IActionResult> Registry(UserDTO user)
         {
             if (!ModelState.IsValid) return BadRequest();
             var userModel = _mapper.Map<User>(user);
-            var newUser = _authService.RegistrateUser(userModel);
+            var newUser = await _authService.RegistrateUser(userModel);
             if (newUser == null)
             {
                 return BadRequest();
