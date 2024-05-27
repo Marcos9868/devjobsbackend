@@ -14,6 +14,13 @@ namespace DevJobsBackend.IoC.ProfileMapping
         {
             CreateMap<User, UserDTO>();
             CreateMap<UserDTO, User>();
+            CreateMap<ResponseModel<User>, UserDTO>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Data.Name))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Data.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Data.Email))
+                .ForMember(dest => dest.HashPassword, opt => opt.MapFrom(src => src.Data.HashPassword))
+                .ForMember(dest => dest.TypeUser, opt => opt.MapFrom(src => src.Data.TypeUser));
+
         }
     }
 }
