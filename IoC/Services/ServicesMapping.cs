@@ -1,8 +1,12 @@
+using System.Text;
 using AutoMapper;
 using DevJobsBackend.Contracts.Services;
+using DevJobsBackend.Data;
 using DevJobsBackend.IoC.ProfileMapping;
 using DevJobsBackend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DevJobsBackend.IoC.Services
 {
@@ -14,11 +18,55 @@ namespace DevJobsBackend.IoC.Services
             services.AddScoped<IUserService, UserService>();
 
             // AutoMapper
-            var mapperConfig = new MapperConfiguration(mc => 
+            var mapperConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
             });
             services.AddSingleton(mapperConfig.CreateMapper());
+        }
+        public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
+        {
+            var jwtSettings = configuration.GetSection("Jwt");
+            string key = jwtSettings.GetValue<string>("Key");
+            string issuer = jwtSettings.GetValue<string>("Issuer");
+            string audience = jwtSettings.GetValue<string>("Audience");
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException(nameof(key), "JWT Key cannot be null or empty.");
+            }
+            if (string.IsNullOrEmpty(issuer))
+            {
+                throw new ArgumentNullException(nameof(issuer), "JWT Issuer cannot be null or empty.");
+            }
+            if (string.IsNullOrEmpty(audience))
+            {
+                throw new ArgumentNullException(nameof(audience), "JWT Audience cannot be null or empty.");
+            }
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretToken"])),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                }
+            );
+        }
+        public static void AddDbContext(this IServiceCollection services, WebApplicationBuilder builder)
+        {
+            string connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+            services.AddDbContext<DataContext>(options =>
+                options.UseNpgsql(connectionString));
         }
     }
 }
