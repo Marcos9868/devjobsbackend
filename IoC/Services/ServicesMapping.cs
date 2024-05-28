@@ -26,8 +26,8 @@ namespace DevJobsBackend.IoC.Services
         }
         public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("Jwt");
-            string key = jwtSettings.GetValue<string>("Key");
+            var jwtSettings = configuration.GetSection("AppSettings");
+            string key = jwtSettings.GetValue<string>("SecretToken");
             string issuer = jwtSettings.GetValue<string>("Issuer");
             string audience = jwtSettings.GetValue<string>("Audience");
 
