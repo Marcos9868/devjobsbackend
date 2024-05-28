@@ -19,7 +19,7 @@ namespace DevJobsBackend.Services
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
 
-        public AuthService(DataContext context, IConfiguration configuration,IUserService userService)
+        public AuthService(DataContext context, IConfiguration configuration, IUserService userService)
         {
             _context = context;
             _configuration = configuration;
@@ -182,26 +182,27 @@ namespace DevJobsBackend.Services
 
         public async Task<ResponseModel<User>> RegistrateUser(User user)
         {
-            ResponseModel<User> response = new ResponseModel<User>();
+            ResponseModel<User> response = new()
+            {
+                Data = user,
+                Status = true,
+                Message = "User registered successfully."
+            };
 
             try
             {
-                _context.Users.Add(user);
+                if (user == null) throw new Exception("Unable to registrate user");
+                await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
 
-                response.Data = user;
-                response.Status = true;
-                response.Message = "User registered successfully.";
             }
             catch (Exception ex)
             {
                 response.Status = false;
-                response.Message = $"An unexpected error occurred: {ex.Message}";
+                response.Message = $"An unexpected error occured: {ex.Message}";
             }
-
             return response;
         }
-
         public ResponseModel<TokenResponseModel> GenerateAccessTokenResponse(string refreshToken)
         {
             ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
