@@ -33,14 +33,14 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
+        public async Task<ResponseBase<TokenResponse>> Login(LoginDTO loginDTO)
         {
             var responseTokens = await _authService.Login(loginDTO);
             return responseTokens;
         }
 
         [HttpPost("RefreshAccessToken")]
-        public ResponseModel<TokenResponseModel> RefreshAccessToken([FromHeader(Name = "RefreshToken")] string refreshToken)
+        public ResponseBase<TokenResponse> RefreshAccessToken([FromHeader(Name = "RefreshToken")] string refreshToken)
         {
             var responseTokens = _authService.GenerateAccessTokenResponse(refreshToken);
             return responseTokens;
