@@ -10,11 +10,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Server=db;Port=5432;Database=devjobsdb;User Id=postgres;Password=root;
+    depends_on:
+      - db
+    volumes:
+      - ${HOME}/.aspnet/https:/https:ro
   db:
     image: postgres:latest
     container_name: consoledotjob.db
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       POSTGRES_DB: devjobsdb
       POSTGRES_USER: postgres
