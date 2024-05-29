@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using AutoMapper;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevJobsBackend.Controllers
@@ -28,6 +25,21 @@ namespace DevJobsBackend.Controllers
             var users = await _userService.GetUsers();
             if (users.Count == 0) return NoContent();
             return Ok(users);
+        }
+        [Authorize]
+        [HttpGet("Me")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetUserSession()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = userIdClaim.Subject.ToString();
+            var userIdConverted = int.Parse(userId);
+            var user = await _userService.Me(userIdConverted);
+            if (user == null) return NotFound();
+            return Ok(user);
         }
         [HttpGet("{idUser}")]
         public async Task<IActionResult> Show(int idUser)
