@@ -182,7 +182,8 @@ namespace DevJobsBackend.Services
 
         public async Task<ResponseModel<User>> RegistrateUser(User user)
         {
-            ResponseModel<User> response = new()
+            user.HashPassword = await GenerateHashPassowrd(user.HashPassword);
+            ResponseModel<User> response = new ResponseModel<User>()
             {
                 Data = user,
                 Status = true,
