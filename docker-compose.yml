@@ -15,7 +15,6 @@ services:
       - db
     volumes:
       - ${HOME}/.aspnet/https:/https:ro
-
   db:
     image: postgres:latest
     container_name: consoledotjob.db
