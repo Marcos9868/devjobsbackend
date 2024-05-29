@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
 using DevJobsBackend.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevJobsBackend.Services
@@ -57,6 +58,12 @@ namespace DevJobsBackend.Services
         {
             _context.Users.Remove(user);
             return _context.SaveChanges() > 0 ? "User removed" : "Unable to remove user";
+        }
+        public async Task<User> Me(int IdUser)
+        {
+            var user = await _context.Users.FindAsync(IdUser) ?? throw new Exception("Unable to find user");
+            return user;
+
         }
     }
 }
