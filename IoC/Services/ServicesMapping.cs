@@ -7,6 +7,7 @@ using DevJobsBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace DevJobsBackend.IoC.Services
 {
@@ -26,8 +27,8 @@ namespace DevJobsBackend.IoC.Services
         }
         public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("Jwt");
-            string key = jwtSettings.GetValue<string>("Key");
+            var jwtSettings = configuration.GetSection("AppSettings");
+            string key = jwtSettings.GetValue<string>("SecretToken");
             string issuer = jwtSettings.GetValue<string>("Issuer");
             string audience = jwtSettings.GetValue<string>("Audience");
 
@@ -50,7 +51,7 @@ namespace DevJobsBackend.IoC.Services
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
                 {
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretToken"])),
@@ -67,6 +68,38 @@ namespace DevJobsBackend.IoC.Services
             string connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
             services.AddDbContext<DataContext>(options =>
                 options.UseNpgsql(connectionString));
+        }
+        public static void AddSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "DevJobs API", Version = "v1" });
+
+                // Configuração do esquema de segurança JWT
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Por favor, insira o token JWT no campo: Bearer {token}",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                    new string[] {}
+                    }
+                });
+            });
         }
     }
 }
