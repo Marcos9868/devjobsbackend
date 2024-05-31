@@ -2,6 +2,7 @@
 using DevJobsBackend.Data;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;

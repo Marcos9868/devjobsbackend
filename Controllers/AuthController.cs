@@ -2,6 +2,7 @@
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevJobsBackend.Controllers

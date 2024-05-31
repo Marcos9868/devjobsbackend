@@ -1,5 +1,6 @@
 ﻿using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 
 namespace DevJobsBackend.Contracts.Services;
 

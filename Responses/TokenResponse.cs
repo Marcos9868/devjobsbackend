@@ -1,4 +1,4 @@
-﻿namespace DevJobsBackend;
+﻿namespace DevJobsBackend.Responses;
 
 public class TokenResponse
 {
