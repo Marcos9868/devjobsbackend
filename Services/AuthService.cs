@@ -21,7 +21,7 @@ namespace DevJobsBackend.Services
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
 
-        public AuthService(DataContext context, IConfiguration configuration, IUserService userService,IEmailService emailService)
+        public AuthService(DataContext context, IConfiguration configuration, IUserService userService, IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
@@ -43,7 +43,7 @@ namespace DevJobsBackend.Services
             }
         }
 
-        private Task<string> GenerateHashPassowrd(string password)
+        public string GenerateHashPassword(string password)
         {
             byte[] inputBytes = Encoding.UTF8.GetBytes(password);
 
@@ -51,7 +51,7 @@ namespace DevJobsBackend.Services
             {
                 byte[] hashBytes = sha256.ComputeHash(inputBytes);
                 string hashedPassword = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-                return Task.FromResult(hashedPassword);
+                return hashedPassword;
             }
         }
 
@@ -185,7 +185,7 @@ namespace DevJobsBackend.Services
 
         public async Task<ResponseBase<User>> RegistrateUser(User user)
         {
-            user.HashPassword = await GenerateHashPassowrd(user.HashPassword);
+            user.HashPassword =  GenerateHashPassword(user.HashPassword);
             ResponseBase<User> response = new ResponseBase<User>()
             {
                 Data = user,
@@ -245,28 +245,36 @@ namespace DevJobsBackend.Services
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:ForgotPasswordSecret"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+                var claims = new[]
+                {
+    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+    new Claim(JwtRegisteredClaimNames.Email, email)
+};
+
                 var tokenConfig = new JwtSecurityToken(
-                issuer: _configuration["JWTTokenSettings:Issuer"],
-                audience: _configuration["JWTTokenSettings:Audience"],
-                expires: DateTime.Now.AddMinutes(5),
-                signingCredentials: credentials
-            );
+                    issuer: _configuration["JWTTokenSettings:Issuer"],
+                    audience: _configuration["JWTTokenSettings:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(5),
+                    signingCredentials: credentials
+                );
 
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenConfig);
+                var token = new JwtSecurityTokenHandler().WriteToken(tokenConfig);
 
-            string clientUrl = _configuration["ExternalUrls:Client_URl"];
 
-            var placeholders = new Dictionary<string, string> {
+                string clientUrl = _configuration["ExternalUrls:Client_URl"];
+
+                var placeholders = new Dictionary<string, string> {
                 {"name",user.Name},
                 {"reset_link",$"{clientUrl}/resetpassword/{token}"}
             };
-            
-            
 
-            await _emailService.SendEmailAsync(email,"Reset Your Password","ForgotPassword",placeholders);
 
-            response.Status=true;
-            response.Message="Email enviado com sucesso";
+
+                await _emailService.SendEmailAsync(email, "Reset Your Password", "ForgotPassword", placeholders);
+
+                response.Status = true;
+                response.Message = "Email enviado com sucesso";
 
             }
             catch (Exception ex)
@@ -275,6 +283,37 @@ namespace DevJobsBackend.Services
                 response.Message = $"An unexpected error occured: {ex.Message}";
             }
             return response;
+        }
+        public string ValidateForgotPasswordTokenAndGetEmail(string jwtToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:ForgotPasswordSecret"]);
+
+            try
+            {
+                tokenHandler.ValidateToken(jwtToken, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["JWTTokenSettings:Issuer"],
+                    ValidAudience = _configuration["JWTTokenSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                }, out SecurityToken validatedToken);
+
+                var jwtTokenObj = (JwtSecurityToken)validatedToken;
+                var emailClaim = jwtTokenObj.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Email);
+
+                return emailClaim?.Value;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"Token validation failed: {ex.Message}");
+                return null;
+            }
+
         }
     }
 }
