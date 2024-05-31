@@ -24,7 +24,7 @@ namespace DevJobsBackend.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent)
+        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string templateName,IDictionary<string, string> ?placeholders)
         {
             if (string.IsNullOrWhiteSpace(toEmail))
             {
@@ -36,6 +36,11 @@ namespace DevJobsBackend.Services
                 return new ResponseBase<bool> { Status = false, Message = "Subject is required." };
             }
 
+            var template = await GetTemplateByNameAsync(templateName);
+            if(template.Status == false) return new ResponseBase<bool> { Status = false, Message = "Template don't exists" };
+
+            var htmlContent = template.Data.Html.ToString();
+
             if (string.IsNullOrWhiteSpace(htmlContent))
             {
                 return new ResponseBase<bool> { Status = false, Message = "Email content is required." };
@@ -45,7 +50,9 @@ namespace DevJobsBackend.Services
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
             message.To.Add(new MailboxAddress(toEmail, toEmail));
             message.Subject = subject;
-
+            if(placeholders != null){
+                htmlContent = ReplacePlaceholders(htmlContent,placeholders);
+            }
             var bodyBuilder = new BodyBuilder
             {
                 HtmlBody = htmlContent
@@ -53,6 +60,8 @@ namespace DevJobsBackend.Services
 
             message.Body = bodyBuilder.ToMessageBody();
 
+
+            
             try
             {
                 using (var client = new SmtpClient())
@@ -144,7 +153,7 @@ namespace DevJobsBackend.Services
             return new ResponseBase<bool> { Status = true, Data = true, Message = "Template deleted successfully." };
         }
 
-        public string ReplacePlaceholders(string templateContent, IDictionary<string, string> placeholders)
+        private string ReplacePlaceholders(string templateContent, IDictionary<string, string> placeholders)
         {
             if (string.IsNullOrWhiteSpace(templateContent))
             {
