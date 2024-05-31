@@ -44,7 +44,7 @@ namespace DevJobsBackend.Services
         }
         public async Task<User> GetUserByEmail(string userEmail)
         {
-            var user = await _context.Users.FindAsync(userEmail) ?? 
+            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Email == userEmail) ?? 
             throw new Exception("Unable to find user");
             return user;
         }
