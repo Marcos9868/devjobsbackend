@@ -254,9 +254,11 @@ namespace DevJobsBackend.Services
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenConfig);
 
+            string clientUrl = _configuration["ExternalUrls:Client_URl"];
+
             var placeholders = new Dictionary<string, string> {
                 {"name",user.Name},
-                {"reset_link","http://localhost:3000/resetpassword/"+token}
+                {"reset_link",$"{clientUrl}/resetpassword/{token}"}
             };
             
             
