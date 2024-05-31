@@ -77,27 +77,27 @@ namespace DevJobsBackend.Controllers
             if (userToRemove is null) return BadRequest();
             return Ok(userToRemove);
         }
-         
-        [HttpPost("reset-password")]
-public async Task<ResponseBase<User>> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDto)
-{
-    if (string.IsNullOrEmpty(resetPasswordDto.NewPassword) || string.IsNullOrEmpty(resetPasswordDto.JwtToken))
-    {
-        return new ResponseBase<User>
+
+        [HttpPut("ResetPassword")]
+        public async Task<ResponseBase<User>> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDto)
         {
-            Status = false,
-            Message = "Password and token are required"
-        };
-    }
+            if (string.IsNullOrEmpty(resetPasswordDto.NewPassword) || string.IsNullOrEmpty(resetPasswordDto.JwtToken))
+            {
+                return new ResponseBase<User>
+                {
+                    Status = false,
+                    Message = "Password and token are required"
+                };
+            }
 
-    var response = await _userService.ResetPassword(resetPasswordDto.NewPassword, resetPasswordDto.JwtToken);
-    if (!response.Status)
-    {
-        return response;
-    }
+            var response = await _userService.ResetPassword(resetPasswordDto.NewPassword, resetPasswordDto.JwtToken);
+            if (!response.Status)
+            {
+                return response;
+            }
 
-    return response;
-}
+            return response;
+        }
 
     }
 }
