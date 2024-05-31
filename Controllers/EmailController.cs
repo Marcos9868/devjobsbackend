@@ -1,5 +1,6 @@
 ﻿using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,39 +19,36 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<EmailTemplate>> GetAllTemplates()
+        public async Task<ResponseBase<IEnumerable<EmailTemplate>>> GetAllTemplates()
         {
             return await _emailService.GetAllTemplatesAsync();
         }
 
         [HttpGet("GetTemplateById/{id}")]
-        public async Task<IActionResult> GetTemplateById(int id)
+        public async Task<ResponseBase<EmailTemplate>> GetTemplateById(int id)
         {
-            var template = await _emailService.GetTemplateByIdAsync(id);
-            if (template == null) return NotFound();
-            return Ok(template);
+            return await _emailService.GetTemplateByIdAsync(id);
         }
 
         [HttpPost("AddTemplate")]
-        public async Task<IActionResult> AddTemplate(EmailTemplate template)
+        public async Task<ResponseBase<bool>> AddTemplate(EmailTemplate template)
         {
-            await _emailService.AddTemplateAsync(template);
-            return CreatedAtAction(nameof(GetTemplateById), new { id = template.Id }, template);
+            return await _emailService.AddTemplateAsync(template);
         }
 
         [HttpPut("UpdateTemplate/{id}")]
-        public async Task<IActionResult> UpdateTemplate(int id, EmailTemplate template)
+        public async Task<ResponseBase<bool>> UpdateTemplate(int id, EmailTemplate template)
         {
-            if (id != template.Id) return BadRequest();
-            await _emailService.UpdateTemplateAsync(template);
-            return NoContent();
+            if (id != template.Id) 
+                return new ResponseBase<bool> { Status = false, Message = "Template ID mismatch." };
+
+            return await _emailService.UpdateTemplateAsync(template);
         }
- 
+
         [HttpDelete("DeleteTemplate/{id}")]
-        public async Task<IActionResult> DeleteTemplate(int id)
+        public async Task<ResponseBase<bool>> DeleteTemplate(int id)
         {
-            await _emailService.DeleteTemplateAsync(id);
-            return NoContent();
+            return await _emailService.DeleteTemplateAsync(id);
         }
     }
 }
