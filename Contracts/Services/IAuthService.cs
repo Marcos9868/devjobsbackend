@@ -10,7 +10,7 @@ public interface IAuthService
     ResponseBase<TokenResponse> GenerateAccessTokenResponse(string refreshToken);
     Task<ResponseBase<User>> RegistrateUser(User user);
 
-    Task<string> ResetPassword(string Email, string NewPassword);
+    Task<ResponseBase<string>> ForgotPassword(string Email);
 
 
 }
