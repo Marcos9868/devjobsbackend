@@ -24,7 +24,7 @@ namespace DevJobsBackend.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent)
+        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent,IDictionary<string, string> placeholders)
         {
             if (string.IsNullOrWhiteSpace(toEmail))
             {
@@ -45,7 +45,9 @@ namespace DevJobsBackend.Services
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
             message.To.Add(new MailboxAddress(toEmail, toEmail));
             message.Subject = subject;
-
+            if(placeholders != null){
+                htmlContent = ReplacePlaceholders(htmlContent,placeholders);
+            }
             var bodyBuilder = new BodyBuilder
             {
                 HtmlBody = htmlContent
@@ -53,6 +55,8 @@ namespace DevJobsBackend.Services
 
             message.Body = bodyBuilder.ToMessageBody();
 
+
+            
             try
             {
                 using (var client = new SmtpClient())
@@ -144,7 +148,7 @@ namespace DevJobsBackend.Services
             return new ResponseBase<bool> { Status = true, Data = true, Message = "Template deleted successfully." };
         }
 
-        public string ReplacePlaceholders(string templateContent, IDictionary<string, string> placeholders)
+        private string ReplacePlaceholders(string templateContent, IDictionary<string, string> placeholders)
         {
             if (string.IsNullOrWhiteSpace(templateContent))
             {

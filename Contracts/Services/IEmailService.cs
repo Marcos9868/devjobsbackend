@@ -7,7 +7,7 @@ namespace DevJobsBackend.Contracts.Services
 {
     public interface IEmailService
     {
-        Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent);
+        Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent,IDictionary<string, string> ?placeholders);
         Task<ResponseBase<IEnumerable<EmailTemplate>>> GetAllTemplatesAsync();
         Task<ResponseBase<EmailTemplate>> GetTemplateByIdAsync(int id);
         Task<ResponseBase<EmailTemplate>> GetTemplateByNameAsync(string name);
@@ -15,6 +15,6 @@ namespace DevJobsBackend.Contracts.Services
         Task<ResponseBase<bool>> UpdateTemplateAsync(EmailTemplate template);
         Task<ResponseBase<bool>> DeleteTemplateAsync(int id);
       
-        string ReplacePlaceholders(string templateContent, IDictionary<string, string> placeholders);
+       
     }
 }
