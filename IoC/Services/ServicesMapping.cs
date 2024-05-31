@@ -31,7 +31,7 @@ namespace DevJobsBackend.IoC.Services
         }
         public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("AppSettings");
+            var jwtSettings = configuration.GetSection("JWTTokenSettings");
             string key = jwtSettings.GetValue<string>("SecretToken");
             string issuer = jwtSettings.GetValue<string>("Issuer");
             string audience = jwtSettings.GetValue<string>("Audience");
@@ -58,7 +58,7 @@ namespace DevJobsBackend.IoC.Services
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretToken"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTTokenSettings:SecretToken"])),
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = true,

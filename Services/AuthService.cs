@@ -72,11 +72,11 @@ namespace DevJobsBackend.Services
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:RefreshTokenSecret"])),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = _configuration["AppSettings:Issuer"],
-                ValidAudience = _configuration["AppSettings:Audience"],
+                ValidIssuer = _configuration["JWTTokenSettings:Issuer"],
+                ValidAudience = _configuration["JWTTokenSettings:Audience"],
                 ClockSkew = TimeSpan.Zero
             };
 
@@ -107,7 +107,7 @@ namespace DevJobsBackend.Services
 
         private string CreateAccessToken(string email)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:SecretToken"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -117,8 +117,8 @@ namespace DevJobsBackend.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["AppSettings:Issuer"],
-                audience: _configuration["AppSettings:Audience"],
+                issuer: _configuration["JWTTokenSettings:Issuer"],
+                audience: _configuration["JWTTokenSettings:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: credentials
@@ -129,7 +129,7 @@ namespace DevJobsBackend.Services
 
         private string CreateRefreshToken(string email)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:RefreshTokenSecret"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:RefreshTokenSecret"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -140,8 +140,8 @@ namespace DevJobsBackend.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["AppSettings:Issuer"],
-                audience: _configuration["AppSettings:Audience"],
+                issuer: _configuration["JWTTokenSettings:Issuer"],
+                audience: _configuration["JWTTokenSettings:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddDays(7),
                 signingCredentials: credentials
@@ -229,13 +229,10 @@ namespace DevJobsBackend.Services
 
             return response;
         }
-        public async Task<string> ResetPassword(string Email, string NewPassword)
+
+        public Task<ResponseBase<string>> ForgotPassword(string Email)
         {
-            var user = await _userService.GetUserByEmail(Email) ?? throw new Exception("Unable to find user");
-            var newHashedPassword = await GenerateHashPassowrd(NewPassword) ?? throw new Exception("Unable to hash password");
-            user.HashPassword = newHashedPassword;
-            _context.SaveChanges();
-            return "Password changed with success";
+            throw new NotImplementedException();
         }
     }
 }
