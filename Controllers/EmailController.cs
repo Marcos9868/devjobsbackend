@@ -23,7 +23,7 @@ namespace DevJobsBackend.Controllers
             return await _emailService.GetAllTemplatesAsync();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("GetTemplateById/{id}")]
         public async Task<IActionResult> GetTemplateById(int id)
         {
             var template = await _emailService.GetTemplateByIdAsync(id);
@@ -31,22 +31,22 @@ namespace DevJobsBackend.Controllers
             return Ok(template);
         }
 
-        [HttpPost]
+        [HttpPost("AddTemplate")]
         public async Task<IActionResult> AddTemplate(EmailTemplate template)
         {
             await _emailService.AddTemplateAsync(template);
             return CreatedAtAction(nameof(GetTemplateById), new { id = template.Id }, template);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("UpdateTemplate/{id}")]
         public async Task<IActionResult> UpdateTemplate(int id, EmailTemplate template)
         {
             if (id != template.Id) return BadRequest();
             await _emailService.UpdateTemplateAsync(template);
             return NoContent();
         }
-
-        [HttpDelete("{id}")]
+ 
+        [HttpDelete("DeleteTemplate/{id}")]
         public async Task<IActionResult> DeleteTemplate(int id)
         {
             await _emailService.DeleteTemplateAsync(id);
