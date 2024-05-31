@@ -1,5 +1,6 @@
 using System.Text;
 using AutoMapper;
+using DevJobsBackend.Configuration;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
 using DevJobsBackend.IoC.ProfileMapping;
@@ -13,10 +14,13 @@ namespace DevJobsBackend.IoC.Services
 {
     public static class ServicesMapping
     {
-        public static void AddServices(this IServiceCollection services)
+        public static void AddServices(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+
+            services.AddSingleton<IEmailService, EmailService>();
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(mc =>
