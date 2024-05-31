@@ -19,12 +19,14 @@ namespace DevJobsBackend.Services
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
 
-        public AuthService(DataContext context, IConfiguration configuration, IUserService userService)
+        public AuthService(DataContext context, IConfiguration configuration, IUserService userService,IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _userService = userService;
+            _emailService = emailService;
 
         }
 
@@ -163,7 +165,7 @@ namespace DevJobsBackend.Services
                     response.Status = false;
                     response.Message = "Email or Password incorrect";
                     return response;
-                 }
+                }
 
                 var refreshToken = CreateRefreshToken(loginDTO.Email);
                 TokenResponse tokens = GenerateNewTokens(refreshToken);
@@ -230,9 +232,32 @@ namespace DevJobsBackend.Services
             return response;
         }
 
-        public Task<ResponseBase<string>> ForgotPassword(string Email)
+        public Task<ResponseBase<string>> ForgotPassword(string email)
         {
-            throw new NotImplementedException();
+            ResponseBase<string> response = new ResponseBase<string>();
+            try
+            {
+                if (email == null) throw new Exception("Unable to registrate user");
+
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:ForgotPasswordSecret"]));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                issuer: _configuration["JWTTokenSettings:Issuer"],
+                audience: _configuration["JWTTokenSettings:Audience"],
+                expires: DateTime.Now.AddMinutes(5),
+                signingCredentials: credentials
+            );
+
+          
+
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = $"An unexpected error occured: {ex.Message}";
+            }
+            return Task.FromResult(response);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace DevJobsBackend.Controllers
             return responseTokens;
         }
 
-        [HttpPut("ResetPassword")]
+        [HttpPut("ForgotPassword")]
         public async Task<ResponseBase<string>>  ForgotPassword(string email)
         {
            
