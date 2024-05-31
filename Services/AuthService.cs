@@ -232,24 +232,39 @@ namespace DevJobsBackend.Services
             return response;
         }
 
-        public Task<ResponseBase<string>> ForgotPassword(string email)
+        public async Task<ResponseBase<string>> ForgotPassword(string email)
         {
             ResponseBase<string> response = new ResponseBase<string>();
+
             try
             {
                 if (email == null) throw new Exception("Unable to registrate user");
 
+                var user = await _userService.GetUserByEmail(email);
+
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:ForgotPasswordSecret"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-                var token = new JwtSecurityToken(
+                var tokenConfig = new JwtSecurityToken(
                 issuer: _configuration["JWTTokenSettings:Issuer"],
                 audience: _configuration["JWTTokenSettings:Audience"],
                 expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: credentials
             );
 
-          
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenConfig);
+
+            var placeholders = new Dictionary<string, string> {
+                {"name",user.Name},
+                {"reset_link","http://localhost:3000/resetpassword/"+token}
+            };
+            
+            
+
+            await _emailService.SendEmailAsync(email,"Reset Your Password","ForgotPassword",placeholders);
+
+            response.Status=true;
+            response.Message="Email enviado com sucesso";
 
             }
             catch (Exception ex)
@@ -257,7 +272,7 @@ namespace DevJobsBackend.Services
                 response.Status = false;
                 response.Message = $"An unexpected error occured: {ex.Message}";
             }
-            return Task.FromResult(response);
+            return response;
         }
     }
 }
