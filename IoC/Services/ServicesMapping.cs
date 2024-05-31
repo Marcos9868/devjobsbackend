@@ -18,6 +18,7 @@ namespace DevJobsBackend.IoC.Services
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             services.AddSingleton<IEmailService, EmailService>();
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
