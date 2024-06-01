@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
@@ -34,10 +35,9 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO,[CurrentUser] User ?user2)
+        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
         {
             var responseTokens = await _authService.Login(loginDTO);
-            var userr = user2;
             return responseTokens;
         }
 
