@@ -3,6 +3,7 @@ using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 
 namespace DevJobsBackend.Controllers
 {
@@ -33,9 +34,10 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
+        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO,[CurrentUser] User ?user2)
         {
             var responseTokens = await _authService.Login(loginDTO);
+            var userr = user2;
             return responseTokens;
         }
 
