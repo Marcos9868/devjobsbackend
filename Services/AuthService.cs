@@ -111,6 +111,7 @@ namespace DevJobsBackend.Services
 
             var claims = new[]
             {
+                new Claim(ClaimTypes.Email, email),
                 new Claim(JwtRegisteredClaimNames.Sub, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
@@ -236,5 +237,57 @@ namespace DevJobsBackend.Services
             _context.SaveChanges();
             return "Password changed with success";
         }
+        private string ValidateAccessToken(string accessToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"])),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _configuration["AppSettings:Issuer"],
+                ValidAudience = _configuration["AppSettings:Audience"],
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out var validatedToken);
+                var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
+
+                if (validatedToken.ValidTo < DateTime.UtcNow)
+                {
+                    throw new SecurityTokenException("Access token has expired");
+                }
+
+                return emailClaim;
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityTokenException("Invalid access token", ex);
+            }
+        }
+
+
+        public async Task<User> GetUserByAccessToken(string accessToken)
+        {
+            var email = ValidateAccessToken(accessToken);
+
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new SecurityTokenException("Invalid access token");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            return user;
+        }
+
     }
 }

@@ -11,5 +11,6 @@ public interface IAuthService
 
     Task<string> ResetPassword(string Email, string NewPassword);
 
+Task<User> GetUserByAccessToken(string accessToken);
 
 }
