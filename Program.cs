@@ -7,7 +7,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 ServicesMapping.AddAuthentication(builder.Services, builder, builder.Configuration);
 ServicesMapping.AddDbContext(builder.Services, builder);
-ServicesMapping.AddServices(builder.Services);
+ServicesMapping.AddServices(builder.Services,builder.Configuration);
 ServicesMapping.AddSwagger(builder.Services);
 
 var app = builder.Build();

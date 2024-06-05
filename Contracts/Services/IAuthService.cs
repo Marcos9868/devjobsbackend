@@ -1,13 +1,14 @@
 ﻿using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 
 namespace DevJobsBackend.Contracts.Services;
 
 public interface IAuthService
-{    Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO);
+{    Task<ResponseBase<TokenResponse>> Login(LoginDTO loginDTO);
     
-    ResponseModel<TokenResponseModel> GenerateAccessTokenResponse(string refreshToken);
-    Task<ResponseModel<User>> RegistrateUser(User user);
+    ResponseBase<TokenResponse> GenerateAccessTokenResponse(string refreshToken);
+    Task<ResponseBase<User>> RegistrateUser(User user);
 
     Task<string> ResetPassword(string Email, string NewPassword);
 

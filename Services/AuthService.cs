@@ -2,6 +2,7 @@
 using DevJobsBackend.Data;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -52,12 +53,12 @@ namespace DevJobsBackend.Services
             }
         }
 
-        private TokenResponseModel GenerateNewTokens(string refreshToken)
+        private TokenResponse GenerateNewTokens(string refreshToken)
         {
             var email = ValidateRefreshToken(refreshToken);
             var accessToken = CreateAccessToken(email);
             var newRefreshToken = CreateRefreshToken(email);
-            TokenResponseModel tokens = new TokenResponseModel
+            TokenResponse tokens = new TokenResponse
             {
                 AccessToken = accessToken,
                 RefreshToken = newRefreshToken
@@ -150,23 +151,23 @@ namespace DevJobsBackend.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<ResponseModel<TokenResponseModel>> Login(LoginDTO loginDTO)
+        public async Task<ResponseBase<TokenResponse>> Login(LoginDTO loginDTO)
         {
-            ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
+            ResponseBase<TokenResponse> response = new ResponseBase<TokenResponse>();
 
             try
             {
-                // var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
+                var userFromDatabase = await _context.Users.FirstOrDefaultAsync(userData => userData.Email == loginDTO.Email);
 
-                // if (userFromDatabase == null || !VerifyPasswordHash(loginDTO.Password, userFromDatabase.HashPassword))
-                // {
-                //     response.Status = false;
-                //     response.Message = "Email or Password incorrect";
-                //     return response;
-                // }
+                if (userFromDatabase == null || !VerifyPasswordHash(loginDTO.Password, userFromDatabase.HashPassword))
+                {
+                    response.Status = false;
+                    response.Message = "Email or Password incorrect";
+                    return response;
+                 }
 
                 var refreshToken = CreateRefreshToken(loginDTO.Email);
-                TokenResponseModel tokens = GenerateNewTokens(refreshToken);
+                TokenResponse tokens = GenerateNewTokens(refreshToken);
 
                 response.Data = tokens;
                 response.Status = true;
@@ -181,10 +182,10 @@ namespace DevJobsBackend.Services
             return response;
         }
 
-        public async Task<ResponseModel<User>> RegistrateUser(User user)
+        public async Task<ResponseBase<User>> RegistrateUser(User user)
         {
             user.HashPassword = await GenerateHashPassowrd(user.HashPassword);
-            ResponseModel<User> response = new ResponseModel<User>()
+            ResponseBase<User> response = new ResponseBase<User>()
             {
                 Data = user,
                 Status = true,
@@ -205,13 +206,13 @@ namespace DevJobsBackend.Services
             }
             return response;
         }
-        public ResponseModel<TokenResponseModel> GenerateAccessTokenResponse(string refreshToken)
+        public ResponseBase<TokenResponse> GenerateAccessTokenResponse(string refreshToken)
         {
-            ResponseModel<TokenResponseModel> response = new ResponseModel<TokenResponseModel>();
+            ResponseBase<TokenResponse> response = new ResponseBase<TokenResponse>();
 
             try
             {
-                TokenResponseModel tokens = GenerateNewTokens(refreshToken);
+                TokenResponse tokens = GenerateNewTokens(refreshToken);
                 response.Data = tokens;
                 response.Status = true;
                 response.Message = "Access token generated successfully.";
