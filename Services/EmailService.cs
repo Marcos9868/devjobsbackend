@@ -24,7 +24,7 @@ namespace DevJobsBackend.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string templateName,IDictionary<string, string> ?placeholders)
+        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string templateName, IDictionary<string, string>? placeholders)
         {
             if (string.IsNullOrWhiteSpace(toEmail))
             {
@@ -36,32 +36,43 @@ namespace DevJobsBackend.Services
                 return new ResponseBase<bool> { Status = false, Message = "Subject is required." };
             }
 
-            var template = await GetTemplateByNameAsync(templateName);
-            if(template.Status == false) return new ResponseBase<bool> { Status = false, Message = "Template don't exists" };
+            // Get the email template by name
+            var templateResponse = await GetTemplateByNameAsync(templateName);
+            if (templateResponse.Status == false) return new ResponseBase<bool> { Status = false, Message = "Template doesn't exist" };
 
-            var htmlContent = template.Data.Html.ToString();
+            var htmlContent = templateResponse.Data.Html;
 
             if (string.IsNullOrWhiteSpace(htmlContent))
             {
                 return new ResponseBase<bool> { Status = false, Message = "Email content is required." };
             }
 
+            // Get the base email template
+            var baseTemplateResponse = await GetTemplateByNameAsync("base");
+            if (baseTemplateResponse.Status == false) return new ResponseBase<bool> { Status = false, Message = "Base template doesn't exist" };
+
+            var baseHtmlContent = baseTemplateResponse.Data.Html;
+
+            // Replace {content} in the base template with the actual email content
+            baseHtmlContent = baseHtmlContent.Replace("{content}", htmlContent);
+
+            if (placeholders != null)
+            {
+                baseHtmlContent = ReplacePlaceholders(baseHtmlContent, placeholders);
+            }
+
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
             message.To.Add(new MailboxAddress(toEmail, toEmail));
             message.Subject = subject;
-            if(placeholders != null){
-                htmlContent = ReplacePlaceholders(htmlContent,placeholders);
-            }
+
             var bodyBuilder = new BodyBuilder
             {
-                HtmlBody = htmlContent
+                HtmlBody = baseHtmlContent
             };
 
             message.Body = bodyBuilder.ToMessageBody();
 
-
-            
             try
             {
                 using (var client = new SmtpClient())
@@ -79,6 +90,7 @@ namespace DevJobsBackend.Services
                 return new ResponseBase<bool> { Status = false, Message = $"Error sending email: {ex.Message}" };
             }
         }
+
 
         public async Task<ResponseBase<IEnumerable<EmailTemplate>>> GetAllTemplatesAsync()
         {

@@ -91,11 +91,7 @@ namespace DevJobsBackend.Controllers
             }
 
             var response = await _userService.ResetPassword(resetPasswordDto.NewPassword, resetPasswordDto.JwtToken);
-            if (!response.Status)
-            {
-                return response;
-            }
-
+           
             return response;
         }
 
