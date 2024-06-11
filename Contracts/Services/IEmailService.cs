@@ -13,9 +13,7 @@ namespace DevJobsBackend.Contracts.Services
         Task<ResponseBase<EmailTemplate>> GetTemplateByNameAsync(string name);
         Task<ResponseBase<bool>> AddTemplateAsync(EmailTemplate template);
         Task<ResponseBase<bool>> UpdateTemplateAsync(EmailTemplate template);
-        Task<ResponseBase<bool>> DeleteTemplateAsync(int id);
-      
-      
+        Task<ResponseBase<bool>> DeleteTemplateAsync(int id); 
     }
 }
  
