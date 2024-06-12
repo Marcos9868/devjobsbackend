@@ -1,70 +1,8 @@
-# Diretórios de build e publicação
 **/bin/
 **/obj/
-**/out/
-**/dist/
-**/build/
-
-# Configurações de desenvolvimento
 **/.vscode/
-**/.idea/
-**/.vs/
-
-# Diretórios de dependências
+**/.git/
 **/node_modules/
-**/packages/
-
-# Arquivos de configuração de ambiente e segurança
-*.user
-*.suo
-*.launchSettings.json
-*.ps1
-*.sh
-*.cmd
-
-# Diretórios e arquivos do sistema operacional
-.DS_Store
-Thumbs.db
-
-# Diretórios de controle de versão
-.git/
-.gitignore
-.gitattributes
-
-# Docker e CI/CD
-.dockerignore
+**/.idea/
+Dockerfile
 docker-compose.yml
-docker-compose.override.yml
-
-# Logs
-*.log
-
-# Arquivos temporários e de cache
-*.tmp
-*.temp
-*.bak
-*.old
-*.swp
-*~ 
-
-# Arquivos e diretórios específicos de ambiente
-.env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Outros arquivos desnecessários
-*.md
-*.yml
-*.yaml
-*.txt
-*.config
-*.json
-
-# Certificados SSL/TLS (se aplicável)
-*.pfx
-*.p12
-*.cer
-*.crt
