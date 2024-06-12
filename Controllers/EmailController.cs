@@ -24,7 +24,7 @@ namespace DevJobsBackend.Controllers
         {
             return await _emailService.GetAllTemplatesAsync();
         }
-
+        [Admin]
         [HttpGet("GetTemplateById/{id}")]
         public async Task<ResponseBase<EmailTemplate>> GetTemplateById(int id)
         {
