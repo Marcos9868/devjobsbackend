@@ -1,4 +1,5 @@
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Identity;
 
 namespace DevJobsBackend.Contracts.Services

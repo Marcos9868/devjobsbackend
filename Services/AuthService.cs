@@ -19,12 +19,14 @@ namespace DevJobsBackend.Services
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
 
-        public AuthService(DataContext context, IConfiguration configuration, IUserService userService)
+        public AuthService(DataContext context, IConfiguration configuration, IUserService userService, IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _userService = userService;
+            _emailService = emailService;
 
         }
 
@@ -164,7 +166,7 @@ namespace DevJobsBackend.Services
                     response.Status = false;
                     response.Message = "Email or Password incorrect";
                     return response;
-                 }
+                }
 
                 var refreshToken = CreateRefreshToken(loginDTO.Email);
                 TokenResponse tokens = GenerateNewTokens(refreshToken);
@@ -289,6 +291,59 @@ namespace DevJobsBackend.Services
 
             return user;
         }
+
+        public async Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail(User currentUser)
+{
+    try
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:DeleteAccountTokenSecret"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Email, currentUser.Email),
+            new Claim(JwtRegisteredClaimNames.Sub, currentUser.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+
+       
+        var token = new JwtSecurityToken(
+            issuer: _configuration["AppSettings:Issuer"],
+            audience: _configuration["AppSettings:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(5),
+            signingCredentials: credentials
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        var placeholder = new Dictionary<string, string> {
+            { "confirmation_link", "http://localhost:3000/deleteAccount/"+tokenString },
+            {"name",currentUser.Name}
+        };
+
+        var template = await _emailService.GetTemplateByNameAsync("DeleteAccountConfirmation");
+
+        await _emailService.SendEmailAsync(currentUser.Email, "Você deseja mesmo deletar sua conta?", template.Data.Html, placeholder);
+
+        return new ResponseBase<object>
+        {
+            Status = true,
+            Message = "Email de confirmação de exclusão de conta enviado com sucesso.",
+            Data = null
+        };
+    }
+    catch (Exception ex)
+    {
+        return new ResponseBase<object>
+        {
+            Status = false,
+            Message = $"Ocorreu um erro ao enviar o email de confirmação: {ex.Message}",
+            Data = null
+        };
+    }
+}
+
 
     }
 }

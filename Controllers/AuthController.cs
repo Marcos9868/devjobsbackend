@@ -57,5 +57,11 @@ namespace DevJobsBackend.Controllers
             if (resetPassword == null) return BadRequest();
             return Ok(resetPassword);
         }
+        [HttpGet("SendAccountDeletionConfirmationEmail")]
+        public async Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail([CurrentUser] User currentUser){
+            var response = await _authService.SendAccountDeletionConfirmationEmail(currentUser);
+
+            return response;
+        }
     }
 }
