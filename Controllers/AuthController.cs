@@ -49,13 +49,13 @@ namespace DevJobsBackend.Controllers
             return responseTokens;
         }
 
-        [HttpPut("ResetPassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDTO reset)
+        [HttpPost("ForgotPassword")]
+        public async Task<ResponseBase<string>>  ForgotPassword(string email)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            var resetPassword = await _authService.ResetPassword(reset.Email, reset.NewPassword);
-            if (resetPassword == null) return BadRequest();
-            return Ok(resetPassword);
+           
+            var resetPassword = await _authService.ForgotPassword(email);
+            
+            return resetPassword;
         }
     }
 }

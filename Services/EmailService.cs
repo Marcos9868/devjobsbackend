@@ -24,7 +24,7 @@ namespace DevJobsBackend.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string htmlContent,IDictionary<string, string> placeholders)
+        public async Task<ResponseBase<bool>> SendEmailAsync(string toEmail, string subject, string templateName, IDictionary<string, string>? placeholders)
         {
             if (string.IsNullOrWhiteSpace(toEmail))
             {
@@ -36,9 +36,29 @@ namespace DevJobsBackend.Services
                 return new ResponseBase<bool> { Status = false, Message = "Subject is required." };
             }
 
+            // Get the email template by name
+            var templateResponse = await GetTemplateByNameAsync(templateName);
+            if (templateResponse.Status == false) return new ResponseBase<bool> { Status = false, Message = "Template doesn't exist" };
+
+            var htmlContent = templateResponse.Data.Html;
+
             if (string.IsNullOrWhiteSpace(htmlContent))
             {
                 return new ResponseBase<bool> { Status = false, Message = "Email content is required." };
+            }
+
+            // Get the base email template
+            var baseTemplateResponse = await GetTemplateByNameAsync("base");
+            if (baseTemplateResponse.Status == false) return new ResponseBase<bool> { Status = false, Message = "Base template doesn't exist" };
+
+            var baseHtmlContent = baseTemplateResponse.Data.Html;
+
+            // Replace {content} in the base template with the actual email content
+            baseHtmlContent = baseHtmlContent.Replace("{content}", htmlContent);
+
+            if (placeholders != null)
+            {
+                baseHtmlContent = ReplacePlaceholders(baseHtmlContent, placeholders);
             }
 
             var message = new MimeMessage();
@@ -50,7 +70,7 @@ namespace DevJobsBackend.Services
             }
             var bodyBuilder = new BodyBuilder
             {
-                HtmlBody = htmlContent
+                HtmlBody = baseHtmlContent
             };
 
             message.Body = bodyBuilder.ToMessageBody();
@@ -74,6 +94,7 @@ namespace DevJobsBackend.Services
                 return new ResponseBase<bool> { Status = false, Message = $"Error sending email: {ex.Message}" };
             }
         }
+
 
         public async Task<ResponseBase<IEnumerable<EmailTemplate>>> GetAllTemplatesAsync()
         {
