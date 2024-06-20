@@ -6,6 +6,7 @@ using DevJobsBackend.Data;
 using DevJobsBackend.IoC.ProfileMapping;
 using DevJobsBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -26,6 +27,8 @@ namespace DevJobsBackend.IoC.Services
             services.AddScoped<IEmailService, EmailService>();
 
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>();
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(mc =>

@@ -65,7 +65,9 @@ namespace DevJobsBackend.Services
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
             message.To.Add(new MailboxAddress(toEmail, toEmail));
             message.Subject = subject;
-
+            if(placeholders != null){
+                htmlContent = ReplacePlaceholders(htmlContent,placeholders);
+            }
             var bodyBuilder = new BodyBuilder
             {
                 HtmlBody = baseHtmlContent
@@ -73,6 +75,8 @@ namespace DevJobsBackend.Services
 
             message.Body = bodyBuilder.ToMessageBody();
 
+
+            
             try
             {
                 using (var client = new SmtpClient())
