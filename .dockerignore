@@ -2,5 +2,7 @@
 **/obj/
 **/.vscode/
 **/.git/
+**/node_modules/
+**/.idea/
 Dockerfile
 docker-compose.yml

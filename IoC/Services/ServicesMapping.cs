@@ -28,7 +28,8 @@ namespace DevJobsBackend.IoC.Services
 
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
-            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>();
+            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>(); 
+            services.AddScoped<IModelBinderProvider, AdminModelBinderProvider>(); 
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(mc =>

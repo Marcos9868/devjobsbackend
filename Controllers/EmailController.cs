@@ -19,11 +19,12 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpGet]
+        [Admin]
         public async Task<ResponseBase<IEnumerable<EmailTemplate>>> GetAllTemplates()
         {
             return await _emailService.GetAllTemplatesAsync();
         }
-
+        [Admin]
         [HttpGet("GetTemplateById/{id}")]
         public async Task<ResponseBase<EmailTemplate>> GetTemplateById(int id)
         {
@@ -31,12 +32,16 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpPost("AddTemplate")]
+        [Admin]
+
         public async Task<ResponseBase<bool>> AddTemplate(EmailTemplate template)
         {
             return await _emailService.AddTemplateAsync(template);
         }
 
         [HttpPut("UpdateTemplate/{id}")]
+        [Admin]
+
         public async Task<ResponseBase<bool>> UpdateTemplate(int id, EmailTemplate template)
         {
             if (id != template.Id) 
@@ -46,6 +51,8 @@ namespace DevJobsBackend.Controllers
         }
 
         [HttpDelete("DeleteTemplate/{id}")]
+        [Admin]
+
         public async Task<ResponseBase<bool>> DeleteTemplate(int id)
         {
             return await _emailService.DeleteTemplateAsync(id);
