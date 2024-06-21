@@ -17,6 +17,4 @@ public interface IAuthService
 
     string ValidateDeleteAccountToken(string DeleteAccountToken);
 
-
-
 }
