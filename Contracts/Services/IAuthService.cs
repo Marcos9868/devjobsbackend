@@ -13,4 +13,10 @@ public interface IAuthService
     string GenerateHashPassword(string password);
     string ValidateForgotPasswordTokenAndGetEmail(string jwtToken);
     Task<User> GetUserByAccessToken(string accessToken);
+    Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail(User currentUser);
+
+    string ValidateDeleteAccountToken(string DeleteAccountToken);
+
+
+
 }

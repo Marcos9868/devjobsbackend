@@ -5,6 +5,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
+using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
 using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +17,7 @@ namespace DevJobsBackend.Services
     public class UserService : IUserService
     {
         private readonly DataContext _context;
+
         private readonly Func<IAuthService> _authServiceFactory;
         
         public UserService(DataContext context, Func<IAuthService> authServiceFactory)
@@ -49,12 +51,14 @@ namespace DevJobsBackend.Services
         public async Task<User> GetUser(int idUser)
         {
             var user = await _context.Users.FindAsync(idUser) ?? throw new Exception("Unable to find user");
+
             return user;
         }
 
         public async Task<User> GetUserByEmail(string userEmail)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail) ?? throw new Exception("Unable to find user");
+            var user = await _context.Users.FindAsync(userEmail) ??
+            throw new Exception("Unable to find user");
             return user;
         }
 
@@ -62,12 +66,38 @@ namespace DevJobsBackend.Services
         {
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0 ? "User updated" : "Unable to update user";
-        }
 
-        public async Task<string> RemoveUser(User user)
+
+        }
+        public async Task<ResponseBase<object>> RemoveUser(DeleteAccountTokenDTO DeleteAccountTokenDTO)
         {
-            _context.Users.Remove(user);
-            return await _context.SaveChangesAsync() > 0 ? "User removed" : "Unable to remove user";
+         try{
+
+                var UserEmail = _authService.ValidateDeleteAccountToken(DeleteAccountTokenDTO.DeleteAccountToken);
+
+                var user = await GetUserByEmail(UserEmail);
+
+                _context.Users.Remove(user);
+                
+                await _context.SaveChangesAsync();
+
+                return new ResponseBase<object>
+                {
+                    Status = true,
+                    Message = "Usuario removido com sucesso!",
+                    Data = null
+                };
+            }
+            catch (Exception ex)
+            {
+
+                return new ResponseBase<object>
+                {
+                    Status = false,
+                    Message = $"Ocorreu um erro ao enviar o email de confirmação: {ex.Message}",
+                    Data = null
+                };
+            }
         }
 
         public async Task<User> Me(int IdUser)

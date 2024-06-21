@@ -368,5 +368,89 @@ namespace DevJobsBackend.Services
             return user;
         }
 
+        public async Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail(User currentUser)
+        {
+            try
+            {
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:DeleteAccountTokenSecret"]));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+                var claims = new[]
+                {
+            new Claim(ClaimTypes.Email, currentUser.Email),
+            new Claim(JwtRegisteredClaimNames.Sub, currentUser.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+
+
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["AppSettings:Issuer"],
+                    audience: _configuration["AppSettings:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(5),
+                    signingCredentials: credentials
+                );
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                var placeholder = new Dictionary<string, string> {
+            { "confirmation_link", "http://localhost:3000/deleteAccount/"+tokenString },
+            {"name",currentUser.Name}
+        };
+
+                var template = await _emailService.GetTemplateByNameAsync("DeleteAccountConfirmation");
+
+                await _emailService.SendEmailAsync(currentUser.Email, "Você deseja mesmo deletar sua conta?", template.Data.Html, placeholder);
+
+                return new ResponseBase<object>
+                {
+                    Status = true,
+                    Message = "Email de confirmação de exclusão de conta enviado com sucesso.",
+                    Data = null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseBase<object>
+                {
+                    Status = false,
+                    Message = $"Ocorreu um erro ao enviar o email de confirmação: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public string ValidateDeleteAccountToken(string deleteAccountToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:DeleteAccountTokenSecret"])),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _configuration["AppSettings:Issuer"],
+                ValidAudience = _configuration["AppSettings:Audience"],
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(deleteAccountToken, validationParameters, out var validatedToken);
+                var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
+
+                if (validatedToken.ValidTo < DateTime.UtcNow)
+                {
+                    throw new SecurityTokenException("Delete account token has expired");
+                }
+
+                return emailClaim;
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityTokenException("Invalid delete account token", ex);
+            }
+        }
+
     }
 }
