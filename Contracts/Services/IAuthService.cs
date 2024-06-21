@@ -14,5 +14,7 @@ public interface IAuthService
 
     Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail(User currentUser);
 
+    string ValidateDeleteAccountToken(string DeleteAccountToken);
+
 
 }

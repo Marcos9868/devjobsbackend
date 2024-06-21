@@ -67,12 +67,11 @@ namespace DevJobsBackend.Controllers
             if (userToUpdate is null) return BadRequest();
             return Ok(userToUpdate);
         }
-        [HttpDelete("{idUser}")]
-        public async Task<IActionResult> Remove(int idUser)
+        [HttpDelete("DeleteUserByToken")]
+        public async Task<IActionResult> Remove(DeleteAccountTokenDTO DeleteAccountToken)
         {
-            var user = await _userService.GetUser(idUser);
-            if (user is null) return NotFound();
-            var userToRemove = await _userService.RemoveUser(user);
+
+            var userToRemove = await _userService.RemoveUser(DeleteAccountToken);
             if (userToRemove is null) return BadRequest();
             return Ok(userToRemove);
         }
