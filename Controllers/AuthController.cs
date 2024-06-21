@@ -4,6 +4,7 @@ using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
 using DevJobsBackend.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 
@@ -34,29 +35,30 @@ namespace DevJobsBackend.Controllers
             }
             return Ok(_mapper.Map<UserDTO>(newUser));
         }
-
+    
         [HttpPost("login")]
         public async Task<ResponseBase<TokenResponse>> Login(LoginDTO loginDTO)
         {
             var responseTokens = await _authService.Login(loginDTO);
             return responseTokens;
         }
-
+        
         [HttpPost("RefreshAccessToken")]
         public ResponseBase<TokenResponse> RefreshAccessToken([FromHeader(Name = "RefreshToken")] string refreshToken)
         {
             var responseTokens = _authService.GenerateAccessTokenResponse(refreshToken);
             return responseTokens;
         }
-
+        [Authorize]
         [HttpPost("ForgotPassword")]
-        public async Task<ResponseBase<string>>  ForgotPassword(string email)
+        public async Task<ResponseBase<string>>  ForgotPassword([CurrentUser] User user)
         {
            
-            var resetPassword = await _authService.ForgotPassword(email);
+            var resetPassword = await _authService.ForgotPassword(user);
             
             return resetPassword;
         }
+        [Authorize]
         [HttpGet("SendAccountDeletionConfirmationEmail")]
         public async Task<ResponseBase<object>> SendAccountDeletionConfirmationEmail([CurrentUser] User currentUser){
             var response = await _authService.SendAccountDeletionConfirmationEmail(currentUser);

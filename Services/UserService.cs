@@ -73,7 +73,7 @@ namespace DevJobsBackend.Services
         {
          try{
 
-                var UserEmail = _authService.ValidateDeleteAccountToken(DeleteAccountTokenDTO.DeleteAccountToken);
+                var UserEmail = AuthService.ValidateDeleteAccountToken(DeleteAccountTokenDTO.DeleteAccountToken);
 
                 var user = await GetUserByEmail(UserEmail);
 

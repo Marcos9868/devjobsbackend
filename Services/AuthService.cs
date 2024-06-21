@@ -233,15 +233,14 @@ namespace DevJobsBackend.Services
             return response;
         }
 
-        public async Task<ResponseBase<string>> ForgotPassword(string email)
+        public async Task<ResponseBase<string>> ForgotPassword(User user)
         {
             ResponseBase<string> response = new ResponseBase<string>();
 
             try
             {
-                if (email == null) throw new Exception("Unable to registrate user");
+                if (user.Email == null) throw new Exception("Unable to registrate user");
 
-                var user = await _userService.GetUserByEmail(email);
 
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:ForgotPasswordSecret"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -249,7 +248,7 @@ namespace DevJobsBackend.Services
                 var claims = new[]
                 {
     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    new Claim(JwtRegisteredClaimNames.Email, email)
+    new Claim(JwtRegisteredClaimNames.Email, user.Email)
 };
 
                 var tokenConfig = new JwtSecurityToken(
@@ -272,7 +271,7 @@ namespace DevJobsBackend.Services
 
 
 
-                await _emailService.SendEmailAsync(email, "Reset Your Password", "ForgotPassword", placeholders);
+                await _emailService.SendEmailAsync(user.Email, "Reset Your Password", "ForgotPassword", placeholders);
 
                 response.Status = true;
                 response.Message = "Email enviado com sucesso";
