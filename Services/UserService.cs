@@ -10,19 +10,24 @@ using DevJobsBackend.Entities;
 using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DevJobsBackend.Services
 {
     public class UserService : IUserService
     {
         private readonly DataContext _context;
-        private readonly IAuthService _authService;
-        public UserService(DataContext context, IAuthService authService)
+
+        private readonly Func<IAuthService> _authServiceFactory;
+        
+        public UserService(DataContext context, Func<IAuthService> authServiceFactory)
         {
             _context = context;
-            _authService = authService;
-
+            _authServiceFactory = authServiceFactory;
         }
+
+        private IAuthService AuthService => _authServiceFactory();
+
         public async Task<User> AddUser(User user)
         {
             User newUser = new()
@@ -36,27 +41,32 @@ namespace DevJobsBackend.Services
             await _context.SaveChangesAsync();
             return newUser;
         }
+
         public async Task<List<User>> GetUsers()
         {
             var users = await _context.Users.ToListAsync();
-            return users ?? [];
+            return users ?? new List<User>();
         }
+
         public async Task<User> GetUser(int idUser)
         {
-            var user = await _context.Users.FindAsync(idUser) ??
-            throw new Exception("Unable to find user");
+            var user = await _context.Users.FindAsync(idUser) ?? throw new Exception("Unable to find user");
+
             return user;
         }
+
         public async Task<User> GetUserByEmail(string userEmail)
         {
             var user = await _context.Users.FindAsync(userEmail) ??
             throw new Exception("Unable to find user");
             return user;
         }
+
         public async Task<string> UpdateUser(User user)
         {
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0 ? "User updated" : "Unable to update user";
+
 
         }
         public async Task<ResponseBase<object>> RemoveUser(DeleteAccountTokenDTO DeleteAccountTokenDTO)
@@ -89,11 +99,51 @@ namespace DevJobsBackend.Services
                 };
             }
         }
+
         public async Task<User> Me(int IdUser)
         {
             var user = await _context.Users.FindAsync(IdUser) ?? throw new Exception("Unable to find user");
             return user;
+        }
 
+        public async Task<ResponseBase<User>> ResetPassword(string newPassword, string JwtToken)
+        {
+            var response = new ResponseBase<User>();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
+                    throw new ArgumentException("New password cannot be empty");
+                }
+
+                var email = AuthService.ValidateForgotPasswordTokenAndGetEmail(JwtToken);
+
+                if (email == null)
+                {
+                    throw new SecurityTokenException("Invalid token");
+                }
+
+                var user = await GetUserByEmail(email);
+                if (user == null)
+                {
+                    throw new Exception("User not found");
+                }
+
+                user.HashPassword = AuthService.GenerateHashPassword(newPassword);
+                await UpdateUser(user);
+
+                response.Data = user;
+                response.Status = true;
+                response.Message = "Password reset successfully";
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+            }
+
+            return response;
         }
     }
 }

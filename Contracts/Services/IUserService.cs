@@ -14,5 +14,6 @@ namespace DevJobsBackend.Contracts.Services
         Task<string> UpdateUser(User user);
         Task<ResponseBase<object>> RemoveUser(DeleteAccountTokenDTO DeleteAccountToken);
         Task<User> Me(int IdUser);
-    }
+        Task<ResponseBase<User>> ResetPassword(string newPassword, string JwtToken);
+     }
 }

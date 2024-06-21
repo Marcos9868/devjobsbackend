@@ -3,6 +3,7 @@ using AutoMapper;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
+using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -75,5 +76,23 @@ namespace DevJobsBackend.Controllers
             if (userToRemove is null) return BadRequest();
             return Ok(userToRemove);
         }
+
+        [HttpPut("ResetPassword")]
+        public async Task<ResponseBase<User>> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDto)
+        {
+            if (string.IsNullOrEmpty(resetPasswordDto.NewPassword) || string.IsNullOrEmpty(resetPasswordDto.JwtToken))
+            {
+                return new ResponseBase<User>
+                {
+                    Status = false,
+                    Message = "Password and token are required"
+                };
+            }
+
+            var response = await _userService.ResetPassword(resetPasswordDto.NewPassword, resetPasswordDto.JwtToken);
+           
+            return response;
+        }
+
     }
 }

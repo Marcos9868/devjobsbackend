@@ -15,15 +15,21 @@ namespace DevJobsBackend.IoC.Services
 {
     public static class ServicesMapping
     {
-        public static void AddServices(this IServiceCollection services,IConfiguration configuration)
+        public static void AddServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserService, UserService>(provider =>
+{
+    var context = provider.GetRequiredService<DataContext>();
+    Func<IAuthService> authServiceFactory = () => provider.GetRequiredService<IAuthService>();
+    return new UserService(context, authServiceFactory);
+});
             services.AddScoped<IEmailService, EmailService>();
-            
+
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
-            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>();
+            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>(); 
+            services.AddScoped<IModelBinderProvider, AdminModelBinderProvider>(); 
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(mc =>
@@ -34,7 +40,7 @@ namespace DevJobsBackend.IoC.Services
         }
         public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("AppSettings");
+            var jwtSettings = configuration.GetSection("JWTTokenSettings");
             string key = jwtSettings.GetValue<string>("SecretToken");
             string issuer = jwtSettings.GetValue<string>("Issuer");
             string audience = jwtSettings.GetValue<string>("Audience");
@@ -61,7 +67,7 @@ namespace DevJobsBackend.IoC.Services
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretToken"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTTokenSettings:SecretToken"])),
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = true,
