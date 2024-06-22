@@ -29,16 +29,8 @@ namespace DevJobsBackend.Controllers
         }
         [Authorize]
         [HttpGet("Me")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUserSession()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized();
-            var userId = userIdClaim.Subject.ToString();
-            var userIdConverted = int.Parse(userId);
-            var user = await _userService.Me(userIdConverted);
+        public async Task<IActionResult> GetUserSession([CurrentUser] User user)
+        {           
             if (user == null) return NotFound();
             return Ok(user);
         }
