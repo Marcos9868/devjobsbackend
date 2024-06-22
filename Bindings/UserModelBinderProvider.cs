@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class UserModelBinderProvider : IModelBinderProvider
 {
-    private readonly IAuthService _authService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public UserModelBinderProvider(IAuthService authService)
+    public UserModelBinderProvider(IServiceProvider serviceProvider)
     {
-        _authService = authService;
+        _serviceProvider = serviceProvider;
     }
 
     public IModelBinder GetBinder(ModelBinderProviderContext context)
