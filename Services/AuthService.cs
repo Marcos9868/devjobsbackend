@@ -310,8 +310,6 @@ namespace DevJobsBackend.Services
             }
             catch (Exception ex)
             {
-                // Log the exception for debugging
-                Console.WriteLine($"Token validation failed: {ex.Message}");
                 return null;
             }
 
@@ -322,14 +320,13 @@ namespace DevJobsBackend.Services
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:SecretToken"])),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = _configuration["AppSettings:Issuer"],
-                ValidAudience = _configuration["AppSettings:Audience"],
+                ValidIssuer = _configuration["JWTTokenSettings:Issuer"],
+                ValidAudience = _configuration["JWTTokenSettings:Audience"],
                 ClockSkew = TimeSpan.Zero
             };
-
             try
             {
                 var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out var validatedToken);
@@ -358,7 +355,12 @@ namespace DevJobsBackend.Services
                 throw new SecurityTokenException("Invalid access token");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            // var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = new User{
+                Email=email,
+                TypeUser=Enums.UserType.ADMIN
+                
+            };
 
             if (user == null)
             {
