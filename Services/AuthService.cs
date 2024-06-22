@@ -397,9 +397,9 @@ namespace DevJobsBackend.Services
             {"name",currentUser.Name}
         };
 
-                var template = await _emailService.GetTemplateByNameAsync("DeleteAccountConfirmation");
+                
 
-                await _emailService.SendEmailAsync(currentUser.Email, "Você deseja mesmo deletar sua conta?", template.Data.Html, placeholder);
+                await _emailService.SendEmailAsync(currentUser.Email, "Você deseja mesmo deletar sua conta?", "DeleteAccountConfirmation", placeholder);
 
                 return new ResponseBase<object>
                 {
