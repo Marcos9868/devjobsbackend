@@ -321,11 +321,11 @@ namespace DevJobsBackend.Services
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:SecretToken"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:SecretToken"])),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = _configuration["AppSettings:Issuer"],
-                ValidAudience = _configuration["AppSettings:Audience"],
+                ValidIssuer = _configuration["JWTTokenSettings:Issuer"],
+                ValidAudience = _configuration["JWTTokenSettings:Audience"],
                 ClockSkew = TimeSpan.Zero
             };
 
@@ -371,7 +371,7 @@ namespace DevJobsBackend.Services
         {
             try
             {
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:DeleteAccountTokenSecret"]));
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:DeleteAccountTokenSecret"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
                 var claims = new[]
@@ -383,8 +383,8 @@ namespace DevJobsBackend.Services
 
 
                 var token = new JwtSecurityToken(
-                    issuer: _configuration["AppSettings:Issuer"],
-                    audience: _configuration["AppSettings:Audience"],
+                    issuer: _configuration["JWTTokenSettings:Issuer"],
+                    audience: _configuration["JWTTokenSettings:Audience"],
                     claims: claims,
                     expires: DateTime.Now.AddMinutes(5),
                     signingCredentials: credentials
@@ -425,11 +425,11 @@ namespace DevJobsBackend.Services
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:DeleteAccountTokenSecret"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTTokenSettings:DeleteAccountTokenSecret"])),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = _configuration["AppSettings:Issuer"],
-                ValidAudience = _configuration["AppSettings:Audience"],
+                ValidIssuer = _configuration["JWTTokenSettings:Issuer"],
+                ValidAudience = _configuration["JWTTokenSettings:Audience"],
                 ClockSkew = TimeSpan.Zero
             };
 
