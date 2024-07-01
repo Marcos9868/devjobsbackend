@@ -1,3 +1,4 @@
+using DevJobsBackend.Dtos;
 using DevJobsBackend.Entities;
 using DevJobsBackend.Responses;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,7 @@ namespace DevJobsBackend.Contracts.Services
         Task<User> GetUserByEmail(string userEmail);
         Task<User> AddUser(User user);
         Task<string> UpdateUser(User user);
-        Task<string> RemoveUser(User user);
+        Task<ResponseBase<object>> RemoveUser(DeleteAccountTokenDTO DeleteAccountToken);
         Task<User> Me(int IdUser);
         Task<ResponseBase<User>> ResetPassword(string newPassword, string JwtToken);
      }
