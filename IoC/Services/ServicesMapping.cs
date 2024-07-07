@@ -1,6 +1,7 @@
 using System.Text;
 using AutoMapper;
-using DevJobsBackend.Configuration;
+using DevJobsBackend.Configurations;
+using DevJobsBackend.Contracts.Factories;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Data;
 using DevJobsBackend.IoC.ProfileMapping;
@@ -28,8 +29,8 @@ namespace DevJobsBackend.IoC.Services
 
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
-            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>(); 
-            services.AddScoped<IModelBinderProvider, AdminModelBinderProvider>(); 
+            services.AddScoped<IModelBinderProvider, UserModelBinderProvider>();
+            services.AddScoped<IModelBinderProvider, AdminModelBinderProvider>();
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(mc =>
@@ -37,6 +38,11 @@ namespace DevJobsBackend.IoC.Services
                 mc.AddProfile(new MappingProfile());
             });
             services.AddSingleton(mapperConfig.CreateMapper());
+
+            services.Configure<TokenSettings>(configuration.GetSection("JWTTokenSettings"));
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenFactory, TokenFactory>();
+            services.AddScoped<ITokenValidator, TokenValidator>();
         }
         public static void AddAuthentication(this IServiceCollection services, WebApplicationBuilder builder, IConfiguration configuration)
         {
