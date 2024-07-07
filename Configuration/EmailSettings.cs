@@ -1,4 +1,4 @@
-﻿namespace DevJobsBackend.Configuration;
+﻿namespace DevJobsBackend.Configurations;
 
 public class EmailSettings
 {
