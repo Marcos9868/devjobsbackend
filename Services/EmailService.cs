@@ -1,7 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
 using Microsoft.Extensions.Options;
-using DevJobsBackend.Configuration;
+using DevJobsBackend.Configurations;
 using DevJobsBackend.Contracts.Services;
 using DevJobsBackend.Entities;
 using DevJobsBackend.Data;
